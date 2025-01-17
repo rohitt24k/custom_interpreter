@@ -3,7 +3,7 @@
 
 int main()
 {
-    string code = "7 + 3 * (10 / (12 / (3 + 1) - 1)) / (2 + 3) - 5 - 3 + (8)";
+    string code = "5 - - - + - (3 + 4) - +2";
 
     Lexer lexer(code);
     Parser parser(lexer);

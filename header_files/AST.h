@@ -29,11 +29,28 @@ public:
 
 class BinOp : public Expr
 {
+private:
+    Expr *_left;
+    Token _op;
+    Expr *_right;
+
 public:
-    Expr *left;
-    Token op;
-    Expr *right;
-    BinOp(Expr *left, Token token, Expr *right) : left(left), right(right), op(token) {}
+    BinOp(Expr *left, Token token, Expr *right) : _left(left), _right(right), _op(token) {}
+    Expr *left() const { return _left; }
+    Expr *right() const { return _right; }
+    Token op() const { return _op; }
+};
+
+class UniaryOp : public Expr
+{
+private:
+    Token _op;
+    Expr *_expr;
+
+public:
+    UniaryOp(Token op, Expr *expr) : _op(op), _expr(expr) {}
+    Token op() const { return _op; }
+    Expr *expr() const { return _expr; }
 };
 
 #endif // AST_H

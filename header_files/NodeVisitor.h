@@ -14,10 +14,10 @@ public:
         {
             return _visitNum(numNode);
         }
-        // if (UniaryOp *UniaryOpNode = dynamic_cast<UniaryOp *>(node))
-        // {
-        //     return visit_UniaryOp(UniaryOpNode);
-        // }
+        if (UniaryOp *UniaryOpNode = dynamic_cast<UniaryOp *>(node))
+        {
+            return _visitUniaryOp(UniaryOpNode);
+        }
         if (BinOp *binOpNode = dynamic_cast<BinOp *>(node))
         {
             return _visitBinOp(binOpNode);
@@ -71,7 +71,7 @@ private:
     // virtual T visit_Type(Type *node) = 0;
     virtual T _visitBinOp(BinOp *node) = 0;
     virtual T _visitNum(Num *node) = 0;
-    // virtual T visit_UniaryOp(UniaryOp *node) = 0;
+    virtual T _visitUniaryOp(UniaryOp *node) = 0;
     // virtual T visit_Compound(Compound *node) = 0;
     // virtual T visit_Assign(Assign *node) = 0;
     // virtual T visit_NoOP(NoOp *node) = 0;

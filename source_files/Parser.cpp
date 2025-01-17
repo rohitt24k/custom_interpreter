@@ -23,6 +23,18 @@ Expr *Parser::_factor()
         _eat(Token::TokenType::INTEGER_CONST);
         return new Num(currentToken, currentToken.value());
     }
+    else if (_currentToken.type() == Token::TokenType::PLUS)
+    {
+        Token currentToken = _currentToken;
+        _eat(Token::TokenType::PLUS);
+        return new UniaryOp(currentToken, _factor());
+    }
+    else if (_currentToken.type() == Token::TokenType::SUBTRACT)
+    {
+        Token currentToken = _currentToken;
+        _eat(Token::TokenType::SUBTRACT);
+        return new UniaryOp(currentToken, _factor());
+    }
     else
     {
         _eat(Token::TokenType::LPAREN);
