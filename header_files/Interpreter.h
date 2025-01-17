@@ -1,31 +1,19 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef INTERPRETER_H
+#define INTERPRETER_H
 
-#include "Token.h"
-#include "Error.h"
+#include "Parser.h"
+#include "NodeVisitor.h"
 
-class Interpreter
+class Interpreter : public NodeVisitor<int>
 {
 private:
-    Token _currentToken;
-    string _sourceCode;
-    int _line = 1;
-    int _column = 0;
-    int _cursor = 0;
-    Token _number();
-    Token _getNextToken();
-    int _term();
-    int _factor();
-
-    void _eat(Token::TokenType type);
+    Parser _parser;
+    int _visitNum(Num *node);
+    int _visitBinOp(BinOp *node);
 
 public:
-    Interpreter(string sourceCode) : _sourceCode(sourceCode), _currentToken(Token(Token::TokenType::EOD, "", 0, 0))
-    {
-        _currentToken = _getNextToken();
-    }
-
-    int expr();
+    Interpreter(Parser parser) : _parser(parser) {}
+    int interpret();
 };
 
-#endif // PARSER_H
+#endif // INTERPRETER_H
