@@ -9,12 +9,13 @@ class Interpreter
 private:
     Token _currentToken;
     string _sourceCode;
-    int _line = 0;
+    int _line = 1;
     int _column = 0;
     int _cursor = 0;
     Token _number();
     Token _getNextToken();
     int _term();
+    int _factor();
 
     void _eat(Token::TokenType type);
 

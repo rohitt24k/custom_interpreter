@@ -14,9 +14,9 @@ string Token::tokenTypeToString(TokenType type)
         return "Subtract";
     case TokenType::MULTIPLICATION:
         return "Multiplication";
-    case TokenType::OPENBRACKET:
+    case TokenType::LPAREN:
         return "Open Bracket";
-    case TokenType::CLOSEBRACKET:
+    case TokenType::RPAREN:
         return "Close Bracket";
     case TokenType::BEGIN:
         return "Begin";

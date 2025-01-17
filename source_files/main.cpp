@@ -4,7 +4,7 @@
 int main()
 {
 
-    string code = "3+4-5+1";
+    string code = "2+(4+4)/2*3-1*2";
     Interpreter interpreter(code);
 
     cout << interpreter.expr() << endl;
