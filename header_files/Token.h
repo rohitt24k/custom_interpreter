@@ -36,17 +36,6 @@ public:
         EOD, // end of document
     };
 
-    unordered_map<string, TokenType> RESERVED_KEYWORDS = {
-        {"BEGIN", TokenType::BEGIN},
-        {"END", TokenType::END},
-        {"DIV", TokenType::INTEGER_DIV},
-        {"INTEGER", TokenType::INTEGER},
-        {"REAL", TokenType::REAL},
-        {"PROGRAM", TokenType::PROGRAM},
-        {"VAR", TokenType::VAR},
-        {"PROCEDURE", TokenType::PROCEDURE},
-    };
-
 private:
     TokenType _type;
     string _value;
@@ -61,5 +50,7 @@ public:
     int column() const { return _column; };
     static string tokenTypeToString(TokenType type);
 };
+
+extern unordered_map<string, Token::TokenType> RESERVED_KEYWORDS;
 
 #endif // TOKEN_H

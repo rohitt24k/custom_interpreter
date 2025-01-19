@@ -22,26 +22,26 @@ public:
         {
             return _visitBinOp(binOpNode);
         }
-        // // if (Compound *compundNode = dynamic_cast<Compound *>(node))
-        // // {
-        // //     return visit_Compound(compundNode);
-        // // }
-        // if (Assign *assignNode = dynamic_cast<Assign *>(node))
-        // {
-        //     return visit_Assign(assignNode);
-        // }
-        // if (NoOp *noOpNode = dynamic_cast<NoOp *>(node))
-        // {
-        //     return visit_NoOP(noOpNode);
-        // }
-        // if (Var *varNode = dynamic_cast<Var *>(node))
-        // {
-        //     return visit_Var(varNode);
-        // }
-        // if (Program *programNode = dynamic_cast<Program *>(node))
-        // {
-        //     return visit_Program(programNode);
-        // }
+        if (CompoundStatement *compoundNode = dynamic_cast<CompoundStatement *>(node))
+        {
+            return _visitCompoundStatement(compoundNode);
+        }
+        if (AssignmentStatement *assignmentNode = dynamic_cast<AssignmentStatement *>(node))
+        {
+            return _visitAssignStatement(assignmentNode);
+        }
+        if (NoOp *noOpNode = dynamic_cast<NoOp *>(node))
+        {
+            return _visitNoOP(noOpNode);
+        }
+        if (Var *varNode = dynamic_cast<Var *>(node))
+        {
+            return _visitVar(varNode);
+        }
+        if (Program *programNode = dynamic_cast<Program *>(node))
+        {
+            return _visitProgram(programNode);
+        }
         // if (VarDecl *varDeclkNode = dynamic_cast<VarDecl *>(node))
         // {
         //     return visit_VarDecl(varDeclkNode);
@@ -64,7 +64,7 @@ public:
     }
 
 private:
-    // virtual T visit_Program(Program *node) = 0;
+    virtual T _visitProgram(Program *node) = 0;
     // virtual T visit_Block(Block *node) = 0;
     // virtual T visit_VarDecl(VarDecl *node) = 0;
     // virtual T visit_ProcedureDecl(ProcedureDecl *node) = 0;
@@ -72,10 +72,10 @@ private:
     virtual T _visitBinOp(BinOp *node) = 0;
     virtual T _visitNum(Num *node) = 0;
     virtual T _visitUniaryOp(UniaryOp *node) = 0;
-    // virtual T visit_Compound(Compound *node) = 0;
-    // virtual T visit_Assign(Assign *node) = 0;
-    // virtual T visit_NoOP(NoOp *node) = 0;
-    // virtual T visit_Var(Var *node) = 0;
+    virtual T _visitCompoundStatement(CompoundStatement *node) = 0;
+    virtual T _visitAssignStatement(AssignmentStatement *node) = 0;
+    virtual T _visitNoOP(NoOp *node) = 0;
+    virtual T _visitVar(Var *node) = 0;
 };
 
 #endif // NODEVISITOR_H

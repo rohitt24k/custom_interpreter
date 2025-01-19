@@ -3,6 +3,7 @@
 
 #include "Token.h"
 #include "Error.h"
+#include <algorithm>
 
 class Lexer
 {
@@ -12,6 +13,17 @@ private:
     int _cursor = 0;
     string _sourceCode;
     Token _integerConst();
+    Token _id();
+    char _peek()
+    {
+        int peekCursor = _cursor + 1;
+        if (peekCursor >= _sourceCode.size())
+        {
+            return '\0';
+        }
+
+        return _sourceCode[peekCursor];
+    }
 
 public:
     Lexer(string sourceCode) : _sourceCode(sourceCode) {}

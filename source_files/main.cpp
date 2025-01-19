@@ -1,15 +1,34 @@
 #include <iostream>
 #include "../header_files/Interpreter.h"
+#include "../header_files/Drawing.h"
 
 int main()
 {
-    string code = "5 - - - + - (3 + 4) - +2";
+    string code = R"(
+BEGIN 
+    BEGIN
+        number := 2;
+        a := number;
+        b := 10 * a + 10 * number / 4;
+        c := a - - b
+    END;
+    x := 11;
+END.
+    )";
 
     Lexer lexer(code);
     Parser parser(lexer);
     Interpreter interpreter(parser);
+    DrawingInterpreter drawing(parser);
 
     cout << interpreter.interpret() << endl;
+    cout << endl;
+    drawing.interpret();
+
+    cout << endl;
+    cout << endl;
+    cout << "SYMBOL TABLE" << endl;
+    interpreter.printGlobalScope();
 
     // int userInput = 0;
     // cout << "For next type 1 ";

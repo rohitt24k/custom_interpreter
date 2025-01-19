@@ -66,6 +66,44 @@ int Interpreter::_visitUniaryOp(UniaryOp *node)
     }
 }
 
+int Interpreter::_visitVar(Var *node)
+{
+    if (_GLOBAL_SCOPE.find(node->value()) != _GLOBAL_SCOPE.end())
+    {
+        return _GLOBAL_SCOPE[node->value()];
+    }
+    else
+    {
+        string errorMessage = "Variable '" + node->value() + "' is not defined.";
+        Error::throwFatalError(Error::ErrorType::RuntimeError, errorMessage, node->token().line(), node->token().column());
+    }
+}
+
+int Interpreter::_visitProgram(Program *node)
+{
+    return visit(node->compoundStatement());
+}
+
+int Interpreter::_visitCompoundStatement(CompoundStatement *node)
+{
+    for (auto statement : node->statements())
+    {
+        visit(statement);
+    }
+    return 0;
+}
+
+int Interpreter::_visitAssignStatement(AssignmentStatement *node)
+{
+    _GLOBAL_SCOPE.insert({node->left()->value(), visit(node->right())});
+    return 0;
+}
+
+int Interpreter::_visitNoOP(NoOp *node)
+{
+    return 0;
+}
+
 int Interpreter::interpret()
 {
     AST *tree = _parser.parse();

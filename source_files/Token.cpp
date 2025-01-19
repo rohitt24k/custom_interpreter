@@ -54,3 +54,14 @@ string Token::tokenTypeToString(TokenType type)
         return "Unknown";
     }
 }
+
+unordered_map<string, Token::TokenType> RESERVED_KEYWORDS = {
+    {"BEGIN", Token::TokenType::BEGIN},
+    {"END", Token::TokenType::END},
+    {"DIV", Token::TokenType::INTEGER_DIV},
+    {"INTEGER", Token::TokenType::INTEGER},
+    {"REAL", Token::TokenType::REAL},
+    {"PROGRAM", Token::TokenType::PROGRAM},
+    {"VAR", Token::TokenType::VAR},
+    {"PROCEDURE", Token::TokenType::PROCEDURE},
+};
