@@ -47,7 +47,20 @@ Node *DrawingInterpreter::_visitVar(Var *node)
 
 Node *DrawingInterpreter::_visitProgram(Program *node)
 {
-    return visit(node->compoundStatement());
+    Node *newNode = new Node("Program");
+    newNode->children.push_back(visit(node->block()));
+    return newNode;
+}
+
+Node *DrawingInterpreter::_visitBlock(Block *node)
+{
+    Node *newNode = new Node("Block");
+    for (auto declaration : node->declarations())
+    {
+        newNode->children.push_back(visit(declaration));
+    }
+    newNode->children.push_back(visit(node->compoundStatement()));
+    return newNode;
 }
 
 Node *DrawingInterpreter::_visitCompoundStatement(CompoundStatement *node)
@@ -95,13 +108,13 @@ Node *DrawingInterpreter::_visitNoOP(NoOp *node)
 //     return newNode;
 // }
 
-// Node *visit_VarDecl(VarDecl *node)
-// {
-//     Node *newNode = new Node("VarDecl");
-//     newNode->children.push_back(visit(node->varNode));
-//     newNode->children.push_back(visit(node->typeNode));
-//     return newNode;
-// }
+Node *DrawingInterpreter::_visitVarDecl(VarDecl *node)
+{
+    Node *newNode = new Node("VarDecl");
+    newNode->children.push_back(visit(node->var()));
+    newNode->children.push_back(visit(node->type()));
+    return newNode;
+}
 
 // Node *visit_ProcedureDecl(ProcedureDecl *node)
 // {
@@ -111,11 +124,11 @@ Node *DrawingInterpreter::_visitNoOP(NoOp *node)
 //     return newNode;
 // }
 
-// Node *visit_Type(Type *node)
-// {
-//     Node *newNode = new Node(node->value);
-//     return newNode;
-// }
+Node *DrawingInterpreter::_visitType(Type *node)
+{
+    Node *newNode = new Node(node->value());
+    return newNode;
+}
 
 // Node *visit_Compound(Compound *node)
 // {

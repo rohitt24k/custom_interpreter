@@ -18,6 +18,13 @@ private:
 
     Program *_program();
 
+    Block *_block();
+
+    vector<Declarations *> _declarations();
+    vector<VarDecl *> _variableDeclarations();
+
+    Type *_typeSpec();
+
     CompoundStatement *_compoundStatement();
     vector<Statement *> _statementList();
     Statement *_statement();

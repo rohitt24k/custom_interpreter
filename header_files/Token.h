@@ -48,6 +48,10 @@ public:
     string value() const { return _value; };
     int line() const { return _line; };
     int column() const { return _column; };
+    string typeAsString()
+    {
+        return tokenTypeToString(_type);
+    }
     static string tokenTypeToString(TokenType type);
 };
 

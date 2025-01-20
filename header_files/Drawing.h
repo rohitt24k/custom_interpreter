@@ -26,9 +26,15 @@ private:
 
     Node *_visitProgram(Program *node);
 
+    Node *_visitBlock(Block *node);
+
     Node *_visitCompoundStatement(CompoundStatement *node);
     Node *_visitAssignStatement(AssignmentStatement *node);
     Node *_visitNoOP(NoOp *node);
+
+    Node *_visitVarDecl(VarDecl *node);
+
+    Node *_visitType(Type *node);
 
     void printHierarchy(Node *node, string prefix);
 

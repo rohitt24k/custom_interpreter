@@ -3,33 +3,44 @@
 
 #include "Parser.h"
 #include "NodeVisitor.h"
+#include <variant>
 
-class Interpreter : public NodeVisitor<int>
+using nodeVisitorResult = variant<int, double>;
+
+class Interpreter : public NodeVisitor<nodeVisitorResult>
 {
 private:
     Parser _parser;
 
-    int _visitNum(Num *node);
-    int _visitBinOp(BinOp *node);
-    int _visitUniaryOp(UniaryOp *node);
-    int _visitVar(Var *node);
+    nodeVisitorResult _visitNum(Num *node);
+    nodeVisitorResult _visitBinOp(BinOp *node);
+    nodeVisitorResult _visitUniaryOp(UniaryOp *node);
+    nodeVisitorResult _visitVar(Var *node);
 
-    int _visitProgram(Program *node);
+    nodeVisitorResult _visitProgram(Program *node);
 
-    int _visitCompoundStatement(CompoundStatement *node);
-    int _visitAssignStatement(AssignmentStatement *node);
-    int _visitNoOP(NoOp *node);
+    nodeVisitorResult _visitBlock(Block *node);
 
-    unordered_map<string, int> _GLOBAL_SCOPE;
+    nodeVisitorResult _visitCompoundStatement(CompoundStatement *node);
+    nodeVisitorResult _visitAssignStatement(AssignmentStatement *node);
+    nodeVisitorResult _visitNoOP(NoOp *node);
+
+    nodeVisitorResult _visitVarDecl(VarDecl *node);
+
+    nodeVisitorResult _visitType(Type *node);
+
+    unordered_map<string, nodeVisitorResult> _GLOBAL_SCOPE;
 
 public:
     Interpreter(Parser parser) : _parser(parser) {}
-    int interpret();
+    nodeVisitorResult interpret();
     void printGlobalScope()
     {
+        // cout << _GLOBAL_SCOPE.size() << endl;
         for (auto row : _GLOBAL_SCOPE)
         {
-            cout << row.first << " : " << row.second << endl;
+            std::visit([&](const auto &second)
+                       { cout << row.first << " : " << second << endl; }, row.second);
         }
     }
 };

@@ -9,7 +9,22 @@ Token Lexer::_integerConst()
         _column++;
         digit += _sourceCode[_cursor++];
     }
-    return Token(Token::TokenType::INTEGER_CONST, digit, _line, column);
+    if (_sourceCode[_cursor] == '.')
+    {
+        digit += '.';
+        _cursor++;
+        _column++;
+        while (isdigit(_sourceCode[_cursor]))
+        {
+            digit += _sourceCode[_cursor];
+            _cursor++;
+        }
+        return Token(Token::TokenType::REAL_CONST, digit, _line, column);
+    }
+    else
+    {
+        return Token(Token::TokenType::INTEGER_CONST, digit, _line, column);
+    }
 }
 
 Token Lexer::_id()
@@ -54,13 +69,27 @@ Token Lexer::_id()
 Token Lexer::getNextToken()
 {
 
-    while (_cursor < _sourceCode.size() && (_sourceCode[_cursor] == ' ' || _sourceCode[_cursor] == '\n'))
+    while (_cursor < _sourceCode.size() && (_sourceCode[_cursor] == ' ' || _sourceCode[_cursor] == '\n' || _sourceCode[_cursor] == '{'))
     {
         if (_sourceCode[_cursor] == ' ')
         {
             _cursor++;
             _column++;
         }
+
+        if (_sourceCode[_cursor] == '{')
+        {
+            _cursor++;
+            _column++;
+            while (_sourceCode[_cursor] != '}')
+            {
+                _cursor++;
+                _column++;
+            }
+            _cursor++;
+            _column++;
+        }
+
         if (_sourceCode[_cursor] == '\n')
         {
             // new line
@@ -100,7 +129,7 @@ Token Lexer::getNextToken()
         if (currentChar == '/')
         {
             _cursor++;
-            return Token(Token::TokenType::INTEGER_DIV, string(1, currentChar), _line, _column++);
+            return Token(Token::TokenType::FLOAT_DIV, string(1, currentChar), _line, _column++);
         }
 
         if (currentChar == '(')

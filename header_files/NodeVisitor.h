@@ -42,18 +42,18 @@ public:
         {
             return _visitProgram(programNode);
         }
-        // if (VarDecl *varDeclkNode = dynamic_cast<VarDecl *>(node))
-        // {
-        //     return visit_VarDecl(varDeclkNode);
-        // }
-        // if (Block *blockNode = dynamic_cast<Block *>(node))
-        // {
-        //     return visit_Block(blockNode);
-        // }
-        // if (Type *typeNode = dynamic_cast<Type *>(node))
-        // {
-        //     return visit_Type(typeNode);
-        // }
+        if (Block *blockNode = dynamic_cast<Block *>(node))
+        {
+            return _visitBlock(blockNode);
+        }
+        if (VarDecl *varDeclNode = dynamic_cast<VarDecl *>(node))
+        {
+            return _visitVarDecl(varDeclNode);
+        }
+        if (Type *typeNode = dynamic_cast<Type *>(node))
+        {
+            return _visitType(typeNode);
+        }
         // if (ProcedureDecl *procedureDeclNode = dynamic_cast<ProcedureDecl *>(node))
         // {
         //     return visit_ProcedureDecl(procedureDeclNode);
@@ -65,10 +65,10 @@ public:
 
 private:
     virtual T _visitProgram(Program *node) = 0;
-    // virtual T visit_Block(Block *node) = 0;
-    // virtual T visit_VarDecl(VarDecl *node) = 0;
+    virtual T _visitBlock(Block *node) = 0;
+    virtual T _visitVarDecl(VarDecl *node) = 0;
     // virtual T visit_ProcedureDecl(ProcedureDecl *node) = 0;
-    // virtual T visit_Type(Type *node) = 0;
+    virtual T _visitType(Type *node) = 0;
     virtual T _visitBinOp(BinOp *node) = 0;
     virtual T _visitNum(Num *node) = 0;
     virtual T _visitUniaryOp(UniaryOp *node) = 0;

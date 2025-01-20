@@ -81,7 +81,7 @@ public:
     bool isFatal() const { return _severity == Severity::Fatal; }
 
     // Static function to throw a fatal error
-    static void throwFatalError(ErrorType type, const string &msg, int lineNum = -1, int colNum = -1)
+    [[noreturn]] static void throwFatalError(ErrorType type, const string &msg, int lineNum = -1, int colNum = -1)
     {
         Error error(type, Severity::Fatal, msg, lineNum, colNum);
         error.showError();

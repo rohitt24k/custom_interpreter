@@ -1,36 +1,67 @@
 #include "../header_files/Interpreter.h"
 
-int Interpreter::_visitNum(Num *node)
+using nodeVisitorResult = variant<int, double>;
+
+nodeVisitorResult Interpreter::_visitNum(Num *node)
 {
     if (node->token().type() == Token::TokenType::INTEGER_CONST)
     {
-        return stoi(node->value());
+        try
+        {
+            // Convert the value to an integer
+            return stoi(node->value());
+        }
+        catch (const std::invalid_argument &e)
+        {
+            // Handle invalid integer value
+            string errorMessage = "Invalid integer value: '" + node->value() + "'.";
+            Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, node->token().line(), node->token().column());
+        }
+        catch (const std::out_of_range &e)
+        {
+            // Handle integer value out of range
+            string errorMessage = "Integer value out of range: '" + node->value() + "'.";
+            Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, node->token().line(), node->token().column());
+        }
+    }
+    else if (node->token().type() == Token::TokenType::REAL_CONST)
+    {
+        try
+        {
+            // Convert the value to a floating-point number
+            return stod(node->value());
+        }
+        catch (const std::invalid_argument &e)
+        {
+            // Handle invalid floating-point value
+            string errorMessage = "Invalid real value: '" + node->value() + "'.";
+            Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, node->token().line(), node->token().column());
+        }
+        catch (const std::out_of_range &e)
+        {
+            // Handle floating-point value out of range
+            string errorMessage = "Real value out of range: '" + node->value() + "'.";
+            Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, node->token().line(), node->token().column());
+        }
+    }
+    else
+    {
+        // Handle unexpected token type
+        string errorMessage = "Expected a numeric constant but found token of type '" +
+                              node->token().typeAsString() + "' with value '" +
+                              node->value() + "'.";
+        Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, node->token().line(), node->token().column());
     }
 }
 
-int Interpreter::_visitBinOp(BinOp *node)
+nodeVisitorResult Interpreter::_visitBinOp(BinOp *node)
 {
+    nodeVisitorResult leftResult = visit(node->left());
+    nodeVisitorResult rightResult = visit(node->right());
 
-    int leftResult = visit(node->left());
-    int rightResult = visit(node->right());
-
-    // cout << "Binary left-> " << leftResult << " operator->" << node->op.getValue() << " right-> " << rightResult << endl;
-
-    if (node->op().type() == Token::TokenType::PLUS)
+    auto checkDivisonByZero = [&](const auto &rightValue)
     {
-        return leftResult + rightResult;
-    }
-    if (node->op().type() == Token::TokenType::SUBTRACT)
-    {
-        return leftResult - rightResult;
-    }
-    if (node->op().type() == Token::TokenType::MULTIPLICATION)
-    {
-        return leftResult * rightResult;
-    }
-    if (node->op().type() == Token::TokenType::INTEGER_DIV)
-    {
-        if (rightResult == 0)
+        if (rightValue == 0)
         {
             // Handle division by zero
             string errorMessage =
@@ -39,23 +70,47 @@ int Interpreter::_visitBinOp(BinOp *node)
                 to_string(node->op().column()) + ".";
             Error::throwFatalError(Error::ErrorType::RuntimeError, errorMessage, node->op().line(), node->op().column());
         }
-        return leftResult / rightResult;
-    }
-    // if (node->op.getType() == TokenType::FLOAT_DIV)
-    // {
-    //     return leftResult.divide(REAL, rightResult);
-    // }
+    };
 
-    string errorMessage =
-        "Unknown binary operator '" + node->op().value() +
-        "' encountered at line " + to_string(node->op().line()) +
-        ", column " + to_string(node->op().column()) + ".";
-    Error::throwFatalError(Error::ErrorType::RuntimeError, errorMessage, node->op().line(), node->op().column());
+    auto result = std::visit(
+        [&](const auto &leftValue, const auto &rightValue) -> nodeVisitorResult
+        {
+            if (node->op().type() == Token::TokenType::PLUS)
+            {
+                return leftValue + rightValue;
+            }
+            if (node->op().type() == Token::TokenType::SUBTRACT)
+            {
+                return leftValue - rightValue;
+            }
+            if (node->op().type() == Token::TokenType::MULTIPLICATION)
+            {
+                return leftValue * rightValue;
+            }
+            if (node->op().type() == Token::TokenType::INTEGER_DIV)
+            {
+                checkDivisonByZero(rightValue);
+                return static_cast<int>(leftValue) / static_cast<int>(rightValue);
+            }
+            if (node->op().type() == Token::TokenType::FLOAT_DIV)
+            {
+                checkDivisonByZero(rightValue);
+                // Perform floating-point division and return a double
+                return static_cast<double>(leftValue) / static_cast<double>(rightValue);
+            }
+            string errorMessage =
+                "Unknown binary operator '" + node->op().value() +
+                "' encountered at line " + to_string(node->op().line()) +
+                ", column " + to_string(node->op().column()) + ".";
+            Error::throwFatalError(Error::ErrorType::RuntimeError, errorMessage, node->op().line(), node->op().column());
+        },
+        leftResult, rightResult);
+    return result;
 }
 
-int Interpreter::_visitUniaryOp(UniaryOp *node)
+nodeVisitorResult Interpreter::_visitUniaryOp(UniaryOp *node)
 {
-    int result = visit(node->expr());
+    int result = get<int>(visit(node->expr()));
     if (node->op().type() == Token::TokenType::PLUS)
     {
         return result;
@@ -66,7 +121,7 @@ int Interpreter::_visitUniaryOp(UniaryOp *node)
     }
 }
 
-int Interpreter::_visitVar(Var *node)
+nodeVisitorResult Interpreter::_visitVar(Var *node)
 {
     if (_GLOBAL_SCOPE.find(node->value()) != _GLOBAL_SCOPE.end())
     {
@@ -79,12 +134,31 @@ int Interpreter::_visitVar(Var *node)
     }
 }
 
-int Interpreter::_visitProgram(Program *node)
+nodeVisitorResult Interpreter::_visitProgram(Program *node)
 {
+    return visit(node->block());
+}
+
+nodeVisitorResult Interpreter::_visitBlock(Block *node)
+{
+    for (auto declaration : node->declarations())
+    {
+        visit(declaration);
+    }
     return visit(node->compoundStatement());
 }
 
-int Interpreter::_visitCompoundStatement(CompoundStatement *node)
+nodeVisitorResult Interpreter::_visitVarDecl(VarDecl *node)
+{
+    return 0; // do nothing fn
+}
+
+nodeVisitorResult Interpreter::_visitType(Type *node)
+{
+    return 0; // do nothing fn
+}
+
+nodeVisitorResult Interpreter::_visitCompoundStatement(CompoundStatement *node)
 {
     for (auto statement : node->statements())
     {
@@ -93,18 +167,18 @@ int Interpreter::_visitCompoundStatement(CompoundStatement *node)
     return 0;
 }
 
-int Interpreter::_visitAssignStatement(AssignmentStatement *node)
+nodeVisitorResult Interpreter::_visitAssignStatement(AssignmentStatement *node)
 {
     _GLOBAL_SCOPE.insert({node->left()->value(), visit(node->right())});
     return 0;
 }
 
-int Interpreter::_visitNoOP(NoOp *node)
+nodeVisitorResult Interpreter::_visitNoOP(NoOp *node)
 {
     return 0;
 }
 
-int Interpreter::interpret()
+nodeVisitorResult Interpreter::interpret()
 {
     AST *tree = _parser.parse();
     return visit(tree);

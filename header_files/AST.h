@@ -101,15 +101,58 @@ class NoOp : public Statement
 {
 };
 
-class Program : public AST
+class Type : public AST
 {
-    // string _name;
+private:
+    Token _token;
+    string _value;
+
+public:
+    Type(Token token, string value) : _token(token), _value(value) {}
+    Token token() const { return _token; }
+    string value() const { return _value; }
+};
+
+class Declarations : public AST
+{
+public:
+    virtual ~Declarations() {};
+};
+
+class VarDecl : public Declarations
+{
+private:
+    Var *_var;
+    Type *_type;
+
+public:
+    VarDecl(Var *var, Type *type) : _var(var), _type(type) {};
+    Var *var() const { return _var; }
+    Type *type() const { return _type; }
+};
+
+class Block : public AST
+{
+private:
+    // the array can have VarDecl and ProcedureDecl
+    vector<Declarations *> _declarations; // array of VarDecl and ProcedureDecl
     CompoundStatement *_compoundStatement;
 
 public:
-    Program(CompoundStatement *compoundStatement) : _compoundStatement(compoundStatement) {};
-    // string name() const { return _name; }
-    Statement *compoundStatement() const { return _compoundStatement; }
+    Block(vector<Declarations *> declarations, CompoundStatement *compoundStatement) : _declarations(declarations), _compoundStatement(compoundStatement) {}
+    const vector<Declarations *> &declarations() const { return _declarations; }
+    CompoundStatement *compoundStatement() const { return _compoundStatement; }
+};
+
+class Program : public AST
+{
+    string _name;
+    Block *_block;
+
+public:
+    Program(string name, Block *block) : _name(name), _block(block) {};
+    string name() const { return _name; }
+    Block *block() const { return _block; }
 };
 
 #endif // AST_H
