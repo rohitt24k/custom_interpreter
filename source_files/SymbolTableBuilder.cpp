@@ -17,7 +17,20 @@ void SymbolTableBuilder::_visitVarDecl(VarDecl *node)
 {
     Symbol *symbol = _symboltable.lookup(node->type()->value());
 
-    _symboltable.define(new VarSymbol(node->var()->value(), symbol));
+    Symbol *variableSymbol = new VarSymbol(node->var()->value(), symbol);
+
+    if (_symboltable.lookup(node->var()->value()) != NULL)
+    {
+        string errorMessage =
+            "Semantic Error: Variable '" + node->var()->value() +
+            "' has already been declared. Redeclaration found at line " +
+            to_string(node->var()->token().line()) +
+            ", column " + to_string(node->var()->token().column()) +
+            ". Ensure each variable is declared only once in the current scope.";
+        Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, node->var()->token().line(), node->var()->token().column());
+    }
+
+    _symboltable.define(variableSymbol);
 }
 
 void SymbolTableBuilder::_visitProcedureDecl(ProcedureDecl *node)
