@@ -25,6 +25,7 @@ private:
     nodeVisitorResult _visitAssignStatement(AssignmentStatement *node);
     nodeVisitorResult _visitNoOP(NoOp *node);
 
+    nodeVisitorResult _visitProcedureDecl(ProcedureDecl *node);
     nodeVisitorResult _visitVarDecl(VarDecl *node);
 
     nodeVisitorResult _visitType(Type *node);

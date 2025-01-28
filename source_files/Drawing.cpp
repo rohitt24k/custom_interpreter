@@ -116,13 +116,12 @@ Node *DrawingInterpreter::_visitVarDecl(VarDecl *node)
     return newNode;
 }
 
-// Node *visit_ProcedureDecl(ProcedureDecl *node)
-// {
-//     Node *newNode = new Node("ProcDecl -> " + node->name);
-//     newNode->children.push_back(visit(node->block));
-
-//     return newNode;
-// }
+Node *DrawingInterpreter::_visitProcedureDecl(ProcedureDecl *node)
+{
+    Node *newNode = new Node("Procedure -> " + node->procedureName());
+    newNode->children.push_back(visit(node->block()));
+    return newNode;
+}
 
 Node *DrawingInterpreter::_visitType(Type *node)
 {

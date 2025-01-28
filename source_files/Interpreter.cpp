@@ -153,6 +153,11 @@ nodeVisitorResult Interpreter::_visitVarDecl(VarDecl *node)
     return 0; // do nothing fn
 }
 
+nodeVisitorResult Interpreter::_visitProcedureDecl(ProcedureDecl *node)
+{
+    return visit(node->block());
+}
+
 nodeVisitorResult Interpreter::_visitType(Type *node)
 {
     return 0; // do nothing fn

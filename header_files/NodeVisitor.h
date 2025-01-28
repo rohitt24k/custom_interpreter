@@ -54,11 +54,10 @@ public:
         {
             return _visitType(typeNode);
         }
-        // if (ProcedureDecl *procedureDeclNode = dynamic_cast<ProcedureDecl *>(node))
-        // {
-        //     return visit_ProcedureDecl(procedureDeclNode);
-        // }
-
+        if (ProcedureDecl *procedureDeclNode = dynamic_cast<ProcedureDecl *>(node))
+        {
+            return _visitProcedureDecl(procedureDeclNode);
+        }
         string errorMessage = "Error in interpreting the tree";
         Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, 0, 0);
     }
@@ -67,7 +66,7 @@ private:
     virtual T _visitProgram(Program *node) = 0;
     virtual T _visitBlock(Block *node) = 0;
     virtual T _visitVarDecl(VarDecl *node) = 0;
-    // virtual T visit_ProcedureDecl(ProcedureDecl *node) = 0;
+    virtual T _visitProcedureDecl(ProcedureDecl *node) = 0;
     virtual T _visitType(Type *node) = 0;
     virtual T _visitBinOp(BinOp *node) = 0;
     virtual T _visitNum(Num *node) = 0;

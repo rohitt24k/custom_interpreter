@@ -33,6 +33,7 @@ private:
     Node *_visitNoOP(NoOp *node);
 
     Node *_visitVarDecl(VarDecl *node);
+    Node *_visitProcedureDecl(ProcedureDecl *node);
 
     Node *_visitType(Type *node);
 

@@ -148,7 +148,6 @@ vector<Declarations *> Parser::_declarations()
         _eat(Token::TokenType::VAR);
         for (auto declaration : _variableDeclarations())
         {
-
             declarations.push_back(declaration);
         }
         _eat(Token::TokenType::SEMI);
@@ -162,12 +161,20 @@ vector<Declarations *> Parser::_declarations()
             }
             _eat(Token::TokenType::SEMI);
         }
-        return declarations;
     }
-    else
+
+    while (_currentToken.type() == Token::TokenType::PROCEDURE)
     {
-        return declarations;
+        _eat(Token::TokenType::PROCEDURE);
+        string procedureName = _currentToken.value();
+        _eat(Token::TokenType::ID);
+        _eat(Token::TokenType::SEMI);
+        Block *procedureBlock = _block();
+        _eat(Token::TokenType::SEMI);
+        declarations.push_back(new ProcedureDecl(procedureName, procedureBlock));
     }
+
+    return declarations;
 }
 
 vector<VarDecl *> Parser::_variableDeclarations()

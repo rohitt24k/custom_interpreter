@@ -15,7 +15,14 @@ void SymbolTableBuilder::_visitBlock(Block *node)
 
 void SymbolTableBuilder::_visitVarDecl(VarDecl *node)
 {
-    _symboltable->define(new VarSymbol(node->var()->value(), _symboltable->lookup(node->type()->value())));
+    Symbol *symbol = _symboltable.lookup(node->type()->value());
+
+    _symboltable.define(new VarSymbol(node->var()->value(), symbol));
+}
+
+void SymbolTableBuilder::_visitProcedureDecl(ProcedureDecl *node)
+{
+    return;
 }
 
 void SymbolTableBuilder::_visitBinOp(BinOp *node)
@@ -37,7 +44,7 @@ void SymbolTableBuilder::_visitCompoundStatement(CompoundStatement *node)
 
 void SymbolTableBuilder::_visitAssignStatement(AssignmentStatement *node)
 {
-    Symbol *symbol = _symboltable->lookup(node->left()->value());
+    Symbol *symbol = _symboltable.lookup(node->left()->value());
     if (symbol == NULL)
     {
         string errorMessage = "Assignment to an undeclared variable '" + node->left()->value() +
@@ -51,7 +58,7 @@ void SymbolTableBuilder::_visitAssignStatement(AssignmentStatement *node)
 
 void SymbolTableBuilder::_visitVar(Var *node)
 {
-    Symbol *symbol = _symboltable->lookup(node->value());
+    Symbol *symbol = _symboltable.lookup(node->value());
     if (symbol == NULL)
     {
         string errorMessage = "Use of undeclared variable '" + node->value() +

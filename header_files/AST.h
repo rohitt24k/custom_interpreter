@@ -144,6 +144,18 @@ public:
     CompoundStatement *compoundStatement() const { return _compoundStatement; }
 };
 
+class ProcedureDecl : public Declarations
+{
+private:
+    string _procedureName;
+    Block *_block;
+
+public:
+    ProcedureDecl(string procedureName, Block *block) : _procedureName(procedureName), _block(block) {}
+    string procedureName() const { return _procedureName; }
+    Block *block() const { return _block; }
+};
+
 class Program : public AST
 {
     string _name;
