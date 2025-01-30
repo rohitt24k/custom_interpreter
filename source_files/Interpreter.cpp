@@ -178,6 +178,11 @@ nodeVisitorResult Interpreter::_visitAssignStatement(AssignmentStatement *node)
     return 0;
 }
 
+nodeVisitorResult Interpreter::_visitProcedureCallStatement(ProcedureCallStatement *node)
+{
+    return 0;
+}
+
 nodeVisitorResult Interpreter::_visitNoOP(NoOp *node)
 {
     return 0;

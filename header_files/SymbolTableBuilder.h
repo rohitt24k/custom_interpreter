@@ -9,7 +9,7 @@ class SymbolTableBuilder : public NodeVisitor<void>
 {
 
 private:
-    SymbolTable _symboltable;
+    SymbolTable *_currentScope;
     Parser _parser;
 
     void _visitNum(Num *node)
@@ -26,6 +26,7 @@ private:
 
     void _visitCompoundStatement(CompoundStatement *node);
     void _visitAssignStatement(AssignmentStatement *node);
+    void _visitProcedureCallStatement(ProcedureCallStatement *node);
     void _visitNoOP(NoOp *node)
     {
         return;
@@ -40,9 +41,7 @@ private:
     };
 
 public:
-    SymbolTableBuilder(Parser parser) : _parser(parser), _symboltable()
-    {
-    }
+    SymbolTableBuilder(Parser parser) : _parser(parser), _currentScope(NULL) {}
 
     void buildSymbolTable()
     {
@@ -53,7 +52,7 @@ public:
 
     void printSymbolTable()
     {
-        _symboltable.printSymbolTable();
+        cout << *_currentScope;
     }
 };
 

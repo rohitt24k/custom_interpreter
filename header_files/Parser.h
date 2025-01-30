@@ -21,6 +21,8 @@ private:
     Block *_block();
 
     vector<Declarations *> _declarations();
+    vector<Param *> _formalParameterList();
+    vector<Param *> _formalPamaters();
     vector<VarDecl *> _variableDeclarations();
 
     Type *_typeSpec();
@@ -29,6 +31,7 @@ private:
     vector<Statement *> _statementList();
     Statement *_statement();
     AssignmentStatement *_assignmentStatement();
+    ProcedureCallStatement *_procedureCallStatement();
     NoOp *_empty();
 
 public:

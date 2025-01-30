@@ -6,29 +6,19 @@
 int main()
 {
    string code = R"(
-PROGRAM Part12;
-VAR
-   a : INTEGER;
+program Main;
 
-PROCEDURE P1;
-VAR
-   a : REAL;
-   k : INTEGER;
+procedure Alpha(a : integer; b : integer);
+var x : integer;
+begin
+   x := (a + b ) * 2;
+end;
 
-   PROCEDURE P2;
-   VAR
-      a, z : INTEGER;
-   BEGIN {P2}
-      z := 777;
-   END;  {P2}
+begin { Main }
 
-BEGIN {P1}
+   Alpha(3 + 5, 7);  { procedure call }
 
-END;  {P1}
-
-BEGIN {Part12}
-   a := 10;
-END.  {Part12}
+end.  { Main }
     )";
 
    Lexer lexer(code);
@@ -40,22 +30,21 @@ END.  {Part12}
    //    token = lexer.getNextToken();
    // }
    Parser parser(lexer);
-   Interpreter interpreter(parser);
+   // Interpreter interpreter(parser);
    DrawingInterpreter drawing(parser);
    SymbolTableBuilder stb(parser);
 
-   cout << "SYMBOL TABLE" << endl;
    stb.buildSymbolTable();
-   stb.printSymbolTable();
    cout << endl;
-   cout << get<int>(interpreter.interpret()) << endl;
+
+   // cout << get<int>(interpreter.interpret()) << endl;
    cout << endl;
    drawing.interpret();
 
    cout << endl;
    cout << endl;
-   cout << "GLOBAL TABLE" << endl;
-   interpreter.printGlobalScope();
+   // cout << "GLOBAL TABLE" << endl;
+   // interpreter.printGlobalScope();
 
    // int userInput = 0;
    // cout << "For next type 1 ";

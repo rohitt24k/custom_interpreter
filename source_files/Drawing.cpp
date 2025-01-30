@@ -79,6 +79,16 @@ Node *DrawingInterpreter::_visitAssignStatement(AssignmentStatement *node)
     return newNode;
 }
 
+Node *DrawingInterpreter::_visitProcedureCallStatement(ProcedureCallStatement *node)
+{
+    Node *newNode = new Node("ProcedureCall:" + node->procedureName());
+    for (auto params : node->actualParams())
+    {
+        newNode->children.push_back(visit(params));
+    }
+    return newNode;
+}
+
 Node *DrawingInterpreter::_visitNoOP(NoOp *node)
 {
     return new Node("NoOp");

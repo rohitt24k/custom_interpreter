@@ -30,10 +30,12 @@ private:
 
     Node *_visitCompoundStatement(CompoundStatement *node);
     Node *_visitAssignStatement(AssignmentStatement *node);
+    Node *_visitProcedureCallStatement(ProcedureCallStatement *node);
+
     Node *_visitNoOP(NoOp *node);
 
-    Node *_visitVarDecl(VarDecl *node);
     Node *_visitProcedureDecl(ProcedureDecl *node);
+    Node *_visitVarDecl(VarDecl *node);
 
     Node *_visitType(Type *node);
 

@@ -11,26 +11,14 @@ void SymbolTable::define(Symbol *symbol)
     _symbols.insert({symbol->name(), symbol});
 }
 
-Symbol *SymbolTable::lookup(string name)
+Symbol *SymbolTable::lookup(string name, int currentScopeOnly)
 {
-    if (_symbols.find(name) == _symbols.end())
-        return NULL;
-    return _symbols[name];
-}
+    if (_symbols.find(name) != _symbols.end())
+        return _symbols[name];
 
-void SymbolTable::printSymbolTable()
-{
-    for (auto row : _symbols)
-    {
-        string type;
-        if (row.second->type() != NULL)
-        {
-            type = row.second->type()->name();
-            cout << "[ " << row.first << " : " << type << " ]" << endl;
-        }
-        else
-        {
-            cout << row.first << endl;
-        }
-    }
+    if (!currentScopeOnly)
+        if (enclosingScope != NULL)
+            return enclosingScope->lookup(name);
+
+    return NULL;
 }

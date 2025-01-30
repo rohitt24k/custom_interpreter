@@ -30,6 +30,10 @@ public:
         {
             return _visitAssignStatement(assignmentNode);
         }
+        if (ProcedureCallStatement *procedureCallNode = dynamic_cast<ProcedureCallStatement *>(node))
+        {
+            return _visitProcedureCallStatement(procedureCallNode);
+        }
         if (NoOp *noOpNode = dynamic_cast<NoOp *>(node))
         {
             return _visitNoOP(noOpNode);
@@ -73,6 +77,7 @@ private:
     virtual T _visitUniaryOp(UniaryOp *node) = 0;
     virtual T _visitCompoundStatement(CompoundStatement *node) = 0;
     virtual T _visitAssignStatement(AssignmentStatement *node) = 0;
+    virtual T _visitProcedureCallStatement(ProcedureCallStatement *node) = 0;
     virtual T _visitNoOP(NoOp *node) = 0;
     virtual T _visitVar(Var *node) = 0;
 };

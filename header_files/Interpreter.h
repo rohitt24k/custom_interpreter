@@ -23,6 +23,8 @@ private:
 
     nodeVisitorResult _visitCompoundStatement(CompoundStatement *node);
     nodeVisitorResult _visitAssignStatement(AssignmentStatement *node);
+    nodeVisitorResult _visitProcedureCallStatement(ProcedureCallStatement *node);
+
     nodeVisitorResult _visitNoOP(NoOp *node);
 
     nodeVisitorResult _visitProcedureDecl(ProcedureDecl *node);

@@ -139,6 +139,51 @@ Block *Parser::_block()
     return new Block(declarations, compoundStatement);
 }
 
+vector<Param *> Parser::_formalPamaters()
+{
+    vector<Var *> variables;
+
+    variables.push_back(_variable());
+
+    while (_currentToken.type() == Token::TokenType::COMMA)
+    {
+        _eat(Token::TokenType::COMMA);
+        variables.push_back(_variable());
+    }
+
+    _eat(Token::TokenType::COLON);
+    Type *type = _typeSpec();
+    vector<Param *> params;
+
+    for (auto var : variables)
+    {
+        params.push_back(new Param(var, type));
+    }
+
+    return params;
+}
+
+vector<Param *> Parser::_formalParameterList()
+{
+    vector<Param *> params;
+
+    for (auto p : _formalPamaters())
+    {
+        params.push_back(p);
+    }
+
+    if (_currentToken.type() == Token::TokenType::SEMI)
+    {
+        _eat(Token::TokenType::SEMI);
+        for (auto p : _formalParameterList())
+        {
+            params.push_back(p);
+        }
+    }
+
+    return params;
+}
+
 vector<Declarations *> Parser::_declarations()
 {
     vector<Declarations *> declarations;
@@ -168,10 +213,20 @@ vector<Declarations *> Parser::_declarations()
         _eat(Token::TokenType::PROCEDURE);
         string procedureName = _currentToken.value();
         _eat(Token::TokenType::ID);
+
+        vector<Param *> params;
+
+        if (_currentToken.type() == Token::TokenType::LPAREN)
+        {
+            _eat(Token::TokenType::LPAREN);
+            params = _formalParameterList();
+            _eat(Token::TokenType::RPAREN);
+        }
+
         _eat(Token::TokenType::SEMI);
         Block *procedureBlock = _block();
         _eat(Token::TokenType::SEMI);
-        declarations.push_back(new ProcedureDecl(procedureName, procedureBlock));
+        declarations.push_back(new ProcedureDecl(procedureName, params, procedureBlock));
     }
 
     return declarations;
@@ -253,6 +308,10 @@ Statement *Parser::_statement()
     }
     if (_currentToken.type() == Token::TokenType::ID)
     {
+        if (_lexer.currentChar() == '(')
+        {
+            return _procedureCallStatement();
+        }
         return _assignmentStatement();
     }
 
@@ -266,6 +325,30 @@ AssignmentStatement *Parser::_assignmentStatement()
     _eat(Token::TokenType::ASSIGN);
     Expr *right = _expr();
     return new AssignmentStatement(left, op, right);
+}
+
+ProcedureCallStatement *Parser::_procedureCallStatement()
+{
+    Token token = _currentToken;
+    string procedureName = _currentToken.value();
+    _eat(Token::TokenType::ID);
+    _eat(Token::TokenType::LPAREN);
+
+    vector<Expr *> actualParams;
+
+    if (_currentToken.type() != Token::TokenType::RPAREN)
+    {
+        actualParams.push_back(_expr());
+        while (_currentToken.type() == Token::TokenType::COMMA)
+        {
+            _eat(Token::TokenType::COMMA);
+            actualParams.push_back(_expr());
+        }
+    }
+
+    _eat(Token::TokenType::RPAREN);
+
+    return new ProcedureCallStatement(procedureName, actualParams, token);
 }
 
 NoOp *Parser::_empty()

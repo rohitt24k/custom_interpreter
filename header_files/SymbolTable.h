@@ -11,21 +11,39 @@ class SymbolTable
 {
 private:
     unordered_map<string, Symbol *> _symbols;
+    string _scopeName;
+    int _scopeLevel;
     void _initBuiltIns();
 
 public:
+    SymbolTable *enclosingScope;
     void initBuiltIns();
 
-    SymbolTable()
-    {
-        initBuiltIns();
-    }
+    SymbolTable(string scopeName, int scopeLevel, SymbolTable *enclosingScope) : _scopeName(scopeName), _scopeLevel(scopeLevel), enclosingScope(enclosingScope) {}
 
     void define(Symbol *symbol);
+    Symbol *lookup(string name, int currentScopeOnly = 0);
 
-    Symbol *lookup(string name);
+    const string scopeName() const { return _scopeName; }
+    const int scopeLevel() const { return _scopeLevel; }
 
-    void printSymbolTable();
+    friend ostream &operator<<(ostream &os, const SymbolTable &symbolTable)
+    {
+        os << "SYMBOL TABLE" << endl;
+
+        os << "Scope Name \t: " << symbolTable._scopeName << endl;
+        os << "Scope Level \t: " << symbolTable._scopeLevel << endl;
+        if (symbolTable.enclosingScope != NULL)
+            os << "Enclosing Scope : " << symbolTable.enclosingScope->_scopeName << endl;
+
+        os << "-----------------------------------------------" << endl;
+
+        for (auto row : symbolTable._symbols)
+        {
+            os << row.first << " : " << *row.second << endl;
+        }
+        return os;
+    }
 };
 
 #endif

@@ -28,6 +28,7 @@ private:
 public:
     Lexer(string sourceCode) : _sourceCode(sourceCode) {}
     Token getNextToken();
+    const char currentChar() const { return _sourceCode[_cursor]; }
 };
 
 #endif // LEXER_H

@@ -72,6 +72,20 @@ public:
     virtual ~Statement() {};
 };
 
+class ProcedureCallStatement : public Statement
+{
+private:
+    Token _token;
+    string _procedureName;
+    vector<Expr *> _actualParams;
+
+public:
+    ProcedureCallStatement(string procedureName, vector<Expr *> actualParams, Token token) : _procedureName(procedureName), _actualParams(actualParams), _token(token) {}
+    string procedureName() const { return _procedureName; }
+    const vector<Expr *> &actualParams() const { return _actualParams; }
+    Token token() const { return _token; }
+};
+
 class CompoundStatement : public Statement
 {
 private:
@@ -144,16 +158,30 @@ public:
     CompoundStatement *compoundStatement() const { return _compoundStatement; }
 };
 
+class Param : public AST // is same as VarDecl but just a separate Node
+{
+private:
+    Var *_var;
+    Type *_type;
+
+public:
+    Param(Var *var, Type *type) : _var(var), _type(type) {};
+    Var *var() const { return _var; }
+    Type *type() const { return _type; }
+};
+
 class ProcedureDecl : public Declarations
 {
 private:
     string _procedureName;
+    vector<Param *> _params;
     Block *_block;
 
 public:
-    ProcedureDecl(string procedureName, Block *block) : _procedureName(procedureName), _block(block) {}
+    ProcedureDecl(string procedureName, vector<Param *> params, Block *block) : _procedureName(procedureName), _params(params), _block(block) {}
     string procedureName() const { return _procedureName; }
     Block *block() const { return _block; }
+    const vector<Param *> params() const { return _params; }
 };
 
 class Program : public AST
