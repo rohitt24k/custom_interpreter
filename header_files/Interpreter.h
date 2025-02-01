@@ -3,14 +3,13 @@
 
 #include "Parser.h"
 #include "NodeVisitor.h"
+#include "CallStack.h"
 #include <variant>
-
-using nodeVisitorResult = variant<int, double>;
 
 class Interpreter : public NodeVisitor<nodeVisitorResult>
 {
 private:
-    Parser _parser;
+    AST *_tree;
 
     nodeVisitorResult _visitNum(Num *node);
     nodeVisitorResult _visitBinOp(BinOp *node);
@@ -32,19 +31,25 @@ private:
 
     nodeVisitorResult _visitType(Type *node);
 
-    unordered_map<string, nodeVisitorResult> _GLOBAL_SCOPE;
+    // unordered_map<string, nodeVisitorResult> _GLOBAL_SCOPE;
+    CallStack _callStack;
 
 public:
-    Interpreter(Parser parser) : _parser(parser) {}
+    Interpreter(AST *tree, int log = 0) : NodeVisitor(log), _tree(tree) {}
     nodeVisitorResult interpret();
-    void printGlobalScope()
+    // void printGlobalScope()
+    // {
+    //     // cout << _GLOBAL_SCOPE.size() << endl;
+    //     for (auto row : _GLOBAL_SCOPE)
+    //     {
+    //         std::visit([&](const auto &second)
+    //                    { cout << row.first << " : " << second << endl; }, row.second);
+    //     }
+    // }
+
+    void printAR()
     {
-        // cout << _GLOBAL_SCOPE.size() << endl;
-        for (auto row : _GLOBAL_SCOPE)
-        {
-            std::visit([&](const auto &second)
-                       { cout << row.first << " : " << second << endl; }, row.second);
-        }
+        _callStack.printAR();
     }
 };
 

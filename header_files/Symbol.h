@@ -5,6 +5,8 @@
 #include <vector>
 using namespace std;
 
+class Block;
+
 class Symbol
 {
 private:
@@ -56,12 +58,14 @@ public:
 class ProcedureSymbol : public Symbol
 {
 private:
-    vector<Symbol *> _params;
+    vector<Symbol *> _formalParams;
+    Block *_blockAst;
+
     string toString() const override
     {
         string str;
         str = "<ProcedureSymbol(name='" + this->name() + "' params=[";
-        for (auto params : this->params())
+        for (auto params : this->formalParams())
         {
             str += params->toString();
         }
@@ -70,10 +74,12 @@ private:
     }
 
 public:
-    ProcedureSymbol(const string &name) : Symbol(name) {}
+    ProcedureSymbol(const string &name) : Symbol(name), _blockAst(NULL) {}
 
-    void insertParams(Symbol *varSymbol) { _params.push_back(varSymbol); }
-    const vector<Symbol *> &params() const { return _params; }
+    void insertParams(Symbol *varSymbol) { _formalParams.push_back(varSymbol); }
+    vector<Symbol *> formalParams() const { return _formalParams; }
+    void setBlockAst(Block *blockAst) { _blockAst = blockAst; }
+    Block *blockAst() const { return _blockAst; }
 };
 
 #endif // SYMBOL_H

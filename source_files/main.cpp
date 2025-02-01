@@ -8,17 +8,28 @@ int main()
    string code = R"(
 program Main;
 
-procedure Alpha(a : integer; b : integer);
-var x : integer;
+procedure Outer(a: integer);
+var
+  x: integer;
+  
+  procedure Inner(b: integer);
+  var
+    y: integer;
+  begin
+    y := a + b;  { 'a' is accessible here because of the nested scope }
+    {writeln('Result from Inner:', y);}
+  end;
+
 begin
-   x := (a + b ) * 2;
+  x := a * 2;
+  {writeln('Result from Outer:', x);}
+  Inner(x);  { Calling the nested procedure }
 end;
 
-begin { Main }
+begin
+  Outer(5);
+end.
 
-   Alpha(3 + 5, 7);  { procedure call }
-
-end.  { Main }
     )";
 
    Lexer lexer(code);
@@ -30,16 +41,18 @@ end.  { Main }
    //    token = lexer.getNextToken();
    // }
    Parser parser(lexer);
-   // Interpreter interpreter(parser);
-   DrawingInterpreter drawing(parser);
-   SymbolTableBuilder stb(parser);
+   AST *tree = parser.parse();
+   // DrawingInterpreter drawing(parser);
+   SymbolTableBuilder stb(tree);
+
+   Interpreter interpreter(tree);
 
    stb.buildSymbolTable();
    cout << endl;
 
-   // cout << get<int>(interpreter.interpret()) << endl;
+   cout << get<int>(interpreter.interpret()) << endl;
    cout << endl;
-   drawing.interpret();
+   // drawing.interpret();
 
    cout << endl;
    cout << endl;

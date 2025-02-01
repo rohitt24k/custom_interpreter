@@ -3,17 +3,22 @@
 void SymbolTableBuilder::_visitProgram(Program *node)
 {
     SymbolTable *globalScope = new SymbolTable("global", 1, NULL);
-    cout << "ENTER scope: global" << endl;
+    if (_logSymbolTable)
+        cout << "ENTER scope: global" << endl;
 
     _currentScope = globalScope;
     _currentScope->initBuiltIns();
 
     visit(node->block());
 
-    cout << endl;
-    printSymbolTable();
+    if (_logSymbolTable)
+    {
 
-    cout << "LEAVE scope: global" << endl;
+        cout << endl;
+        printSymbolTable();
+
+        cout << "LEAVE scope: global" << endl;
+    }
 
     _currentScope = globalScope->enclosingScope;
 }
@@ -50,9 +55,13 @@ void SymbolTableBuilder::_visitProcedureDecl(ProcedureDecl *node)
 {
     const string procedureName = node->procedureName();
     ProcedureSymbol *procedureSymbol = new ProcedureSymbol(procedureName);
+
     _currentScope->define(procedureSymbol);
 
-    cout << "ENTER scope: " << procedureName << endl;
+    procedureSymbol->setBlockAst(node->block());
+
+    if (_logSymbolTable)
+        cout << "ENTER scope: " << procedureName << endl;
 
     SymbolTable *procedureSymbolTable = new SymbolTable(procedureName, _currentScope->scopeLevel() + 1, _currentScope);
 
@@ -68,12 +77,15 @@ void SymbolTableBuilder::_visitProcedureDecl(ProcedureDecl *node)
 
     visit(node->block());
 
-    cout << endl;
-    printSymbolTable();
+    if (_logSymbolTable)
+    {
+        cout << endl;
+        printSymbolTable();
+        cout << "Leave scope: " << procedureName << endl;
+    }
 
     _currentScope = _currentScope->enclosingScope;
 
-    cout << "Leave scope: " << procedureName << endl;
     return;
 }
 
@@ -122,10 +134,12 @@ void SymbolTableBuilder::_visitProcedureCallStatement(ProcedureCallStatement *no
 
     ProcedureSymbol *procedureSymbol = dynamic_cast<ProcedureSymbol *>(symbol);
 
-    if (procedureSymbol->params().size() != node->actualParams().size())
+    node->setProcedureSymbol(procedureSymbol);
+
+    if (procedureSymbol->formalParams().size() != node->actualParams().size())
     {
         string errorMessage = "Procedure '" + node->procedureName() +
-                              "' expects " + to_string(procedureSymbol->params().size()) +
+                              "' expects " + to_string(procedureSymbol->formalParams().size()) +
                               " arguments, but " + to_string(node->actualParams().size()) +
                               " were provided.";
         Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage,

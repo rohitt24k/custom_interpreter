@@ -10,7 +10,7 @@ class SymbolTableBuilder : public NodeVisitor<void>
 
 private:
     SymbolTable *_currentScope;
-    Parser _parser;
+    AST *_tree;
 
     void _visitNum(Num *node)
     {
@@ -40,13 +40,14 @@ private:
         return;
     };
 
+    int _logSymbolTable = 0;
+
 public:
-    SymbolTableBuilder(Parser parser) : _parser(parser), _currentScope(NULL) {}
+    SymbolTableBuilder(AST *tree, int log = 0) : NodeVisitor(log), _tree(tree), _currentScope(NULL), _logSymbolTable(log) {}
 
     void buildSymbolTable()
     {
-        AST *tree = _parser.parse();
-        visit(tree);
+        visit(_tree);
         return;
     };
 

@@ -3,6 +3,7 @@
 
 #include "Token.h"
 #include "vector"
+#include "Symbol.h"
 
 class AST
 {
@@ -78,12 +79,15 @@ private:
     Token _token;
     string _procedureName;
     vector<Expr *> _actualParams;
+    ProcedureSymbol *_procedureSymbol;
 
 public:
-    ProcedureCallStatement(string procedureName, vector<Expr *> actualParams, Token token) : _procedureName(procedureName), _actualParams(actualParams), _token(token) {}
+    ProcedureCallStatement(string procedureName, vector<Expr *> actualParams, Token token) : _procedureName(procedureName), _actualParams(actualParams), _token(token), _procedureSymbol(NULL) {}
     string procedureName() const { return _procedureName; }
     const vector<Expr *> &actualParams() const { return _actualParams; }
     Token token() const { return _token; }
+    void setProcedureSymbol(ProcedureSymbol *procedureSymbol) { _procedureSymbol = procedureSymbol; }
+    ProcedureSymbol *procedureSymbol() const { return _procedureSymbol; }
 };
 
 class CompoundStatement : public Statement

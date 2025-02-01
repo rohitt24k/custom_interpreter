@@ -1,7 +1,5 @@
 #include "../header_files/Interpreter.h"
 
-using nodeVisitorResult = variant<int, double>;
-
 nodeVisitorResult Interpreter::_visitNum(Num *node)
 {
     if (node->token().type() == Token::TokenType::INTEGER_CONST)
@@ -123,12 +121,13 @@ nodeVisitorResult Interpreter::_visitUniaryOp(UniaryOp *node)
 
 nodeVisitorResult Interpreter::_visitVar(Var *node)
 {
-    if (_GLOBAL_SCOPE.find(node->value()) != _GLOBAL_SCOPE.end())
+    try
     {
-        return _GLOBAL_SCOPE[node->value()];
+        return _callStack.get(node->value());
     }
-    else
+    catch (const exception &e)
     {
+        cerr << e.what() << '\n';
         string errorMessage = "Variable '" + node->value() + "' is not defined.";
         Error::throwFatalError(Error::ErrorType::RuntimeError, errorMessage, node->token().line(), node->token().column());
     }
@@ -136,7 +135,13 @@ nodeVisitorResult Interpreter::_visitVar(Var *node)
 
 nodeVisitorResult Interpreter::_visitProgram(Program *node)
 {
-    return visit(node->block());
+    ActivationRecord *ar = new ActivationRecord("Program");
+    _callStack.push(ar);
+    nodeVisitorResult result = visit(node->block());
+    _callStack.printAR();
+    _callStack.pop();
+
+    return result;
 }
 
 nodeVisitorResult Interpreter::_visitBlock(Block *node)
@@ -155,7 +160,14 @@ nodeVisitorResult Interpreter::_visitVarDecl(VarDecl *node)
 
 nodeVisitorResult Interpreter::_visitProcedureDecl(ProcedureDecl *node)
 {
-    return visit(node->block());
+    // ActivationRecord *ar = new ActivationRecord(node->procedureName(), _callStack.top());
+    // _callStack.push(ar);
+    // return visit(node->block());
+
+    // _callStack.printAR();
+    // _callStack.pop();
+
+    return 0;
 }
 
 nodeVisitorResult Interpreter::_visitType(Type *node)
@@ -174,12 +186,50 @@ nodeVisitorResult Interpreter::_visitCompoundStatement(CompoundStatement *node)
 
 nodeVisitorResult Interpreter::_visitAssignStatement(AssignmentStatement *node)
 {
-    _GLOBAL_SCOPE.insert({node->left()->value(), visit(node->right())});
+    try
+    {
+        _callStack.set(node->left()->value(), visit(node->right()));
+        return 0;
+    }
+    catch (const exception &e)
+    {
+        cerr << e.what() << '\n';
+
+        string errorMessage = "Assignment failed for variable '" + node->left()->value() +
+                              "'. Possible reasons: Variable is not declared, or the call stack is empty.";
+
+        Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage,
+                               node->left()->token().line(), node->left()->token().column());
+    }
+
     return 0;
 }
 
 nodeVisitorResult Interpreter::_visitProcedureCallStatement(ProcedureCallStatement *node)
 {
+    ActivationRecord *ar = new ActivationRecord(node->procedureName(), _callStack.top());
+    _callStack.push(ar);
+
+    vector<Expr *> actualParams = node->actualParams();
+    ProcedureSymbol *procedureSymbol = node->procedureSymbol();
+    vector<Symbol *> formalParams = procedureSymbol->formalParams();
+
+    // now map the formalParams to the actual Params in the call stack of this procedure
+    for (int i = 0; i < actualParams.size(); i++)
+    {
+        string name = formalParams[i]->name();
+        nodeVisitorResult value = visit(actualParams[i]);
+
+        _callStack.set(name, value);
+    }
+
+    AST *blockAst = procedureSymbol->blockAst();
+
+    visit(blockAst);
+
+    _callStack.printAR();
+    _callStack.pop();
+
     return 0;
 }
 
@@ -190,6 +240,5 @@ nodeVisitorResult Interpreter::_visitNoOP(NoOp *node)
 
 nodeVisitorResult Interpreter::interpret()
 {
-    AST *tree = _parser.parse();
-    return visit(tree);
+    return visit(_tree);
 }
