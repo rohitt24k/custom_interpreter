@@ -7,7 +7,8 @@ int main()
 {
    string code = R"(
 program Main;
-
+var
+   r:String;
 procedure Outer(a: integer);
 var
   x: integer;
@@ -17,7 +18,7 @@ var
     y: integer;
   begin
     y := a + b;  { 'a' is accessible here because of the nested scope }
-    {writeln('Result from Inner:', y);}
+    writeln('Result from Inner:', y);
   end;
 
 begin
@@ -27,7 +28,9 @@ begin
 end;
 
 begin
-  Outer(5);
+   r:='noice\' super noice';
+   writeln;
+   Outer(5);
 end.
 
     )";
@@ -48,14 +51,15 @@ end.
    Interpreter interpreter(tree);
 
    stb.buildSymbolTable();
-   cout << endl;
+   // cout << endl;
+   interpreter.interpret();
 
-   cout << get<int>(interpreter.interpret()) << endl;
-   cout << endl;
+   // cout << get<int>() << endl;
+
    // drawing.interpret();
 
-   cout << endl;
-   cout << endl;
+   // cout << endl;
+   // cout << endl;
    // cout << "GLOBAL TABLE" << endl;
    // interpreter.printGlobalScope();
 

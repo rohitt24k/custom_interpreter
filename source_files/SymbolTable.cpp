@@ -4,6 +4,8 @@ void SymbolTable::initBuiltIns()
 {
     define(new BuiltInTypeSymbol("INTEGER"));
     define(new BuiltInTypeSymbol("REAL"));
+    define(new BuiltInTypeSymbol("STRING"));
+    define(new BuiltInProcedureSymbol("WRITELN"));
 }
 
 void SymbolTable::define(Symbol *symbol)

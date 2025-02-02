@@ -29,6 +29,12 @@ Expr *Parser::_factor()
         _eat(Token::TokenType::REAL_CONST);
         return new Num(currentToken, currentToken.value());
     }
+    else if (_currentToken.type() == Token::TokenType::STRING_CONST)
+    {
+        Token currentToken = _currentToken;
+        _eat(Token::TokenType::STRING_CONST);
+        return new StringLiteral(currentToken, currentToken.value());
+    }
     else if (_currentToken.type() == Token::TokenType::PLUS)
     {
         Token currentToken = _currentToken;
@@ -266,6 +272,10 @@ Type *Parser::_typeSpec()
     {
         _eat(Token::TokenType::REAL);
     }
+    else if (token.type() == Token::TokenType::STRING)
+    {
+        _eat(Token::TokenType::STRING);
+    }
     else
     {
         string errorMessage = "Unexpected token '" + _currentToken.value() +
@@ -308,7 +318,7 @@ Statement *Parser::_statement()
     }
     if (_currentToken.type() == Token::TokenType::ID)
     {
-        if (_lexer.currentChar() == '(')
+        if (_lexer.currentChar() == '(' || _lexer.getNextChar() == ';')
         {
             return _procedureCallStatement();
         }
@@ -331,22 +341,27 @@ ProcedureCallStatement *Parser::_procedureCallStatement()
 {
     Token token = _currentToken;
     string procedureName = _currentToken.value();
+
     _eat(Token::TokenType::ID);
-    _eat(Token::TokenType::LPAREN);
 
     vector<Expr *> actualParams;
 
-    if (_currentToken.type() != Token::TokenType::RPAREN)
+    if (_currentToken.type() == Token::TokenType::LPAREN)
     {
-        actualParams.push_back(_expr());
-        while (_currentToken.type() == Token::TokenType::COMMA)
-        {
-            _eat(Token::TokenType::COMMA);
-            actualParams.push_back(_expr());
-        }
-    }
+        _eat(Token::TokenType::LPAREN);
 
-    _eat(Token::TokenType::RPAREN);
+        if (_currentToken.type() != Token::TokenType::RPAREN)
+        {
+            actualParams.push_back(_expr());
+            while (_currentToken.type() == Token::TokenType::COMMA)
+            {
+                _eat(Token::TokenType::COMMA);
+                actualParams.push_back(_expr());
+            }
+        }
+
+        _eat(Token::TokenType::RPAREN);
+    }
 
     return new ProcedureCallStatement(procedureName, actualParams, token);
 }

@@ -12,7 +12,7 @@ public:
     {
         INTEGER, // THIS IS TO MEAN INTEGET TYPE AND NOT INTERGER CONSTANT
         REAL,    // THIS IS LIKE FLOAT IN PASCAL
-        STRING,
+        STRING,  // Just like normal string
         PLUS,
         SUBTRACT,
         MULTIPLICATION,
@@ -24,15 +24,18 @@ public:
         ID,
         ASSIGN,
         SEMI,
+        SINGLE_QUOTE,
         PROGRAM,
         VAR,
         COLON,
         COMMA,
         INTEGER_CONST,
         REAL_CONST,
+        STRING_CONST,
         INTEGER_DIV,
         FLOAT_DIV,
         PROCEDURE,
+        WRITELN,
         EOD, // end of document
     };
 

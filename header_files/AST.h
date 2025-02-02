@@ -29,6 +29,18 @@ public:
     string value() const { return _value; }
 };
 
+class StringLiteral : public Expr
+{
+private:
+    Token _token;
+    string _value;
+
+public:
+    StringLiteral(Token token, string value) : _token(token), _value(value) {}
+    Token token() const { return _token; }
+    string value() const { return _value; }
+};
+
 class BinOp : public Expr
 {
 private:

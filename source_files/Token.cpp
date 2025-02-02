@@ -8,6 +8,12 @@ string Token::tokenTypeToString(TokenType type)
         return "Integer";
     case TokenType::REAL:
         return "Real";
+    case TokenType::STRING:
+        return "String";
+    case TokenType::SINGLE_QUOTE:
+        return "Single Quote";
+    case TokenType::STRING_CONST:
+        return "String Const";
     case TokenType::PLUS:
         return "Plus";
     case TokenType::SUBTRACT:
@@ -61,6 +67,7 @@ unordered_map<string, Token::TokenType> RESERVED_KEYWORDS = {
     {"DIV", Token::TokenType::INTEGER_DIV},
     {"INTEGER", Token::TokenType::INTEGER},
     {"REAL", Token::TokenType::REAL},
+    {"STRING", Token::TokenType::STRING},
     {"PROGRAM", Token::TokenType::PROGRAM},
     {"VAR", Token::TokenType::VAR},
     {"PROCEDURE", Token::TokenType::PROCEDURE},

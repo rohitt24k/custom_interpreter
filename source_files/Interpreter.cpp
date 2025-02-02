@@ -52,58 +52,133 @@ nodeVisitorResult Interpreter::_visitNum(Num *node)
     }
 }
 
+nodeVisitorResult Interpreter::_visitStringLiteral(StringLiteral *node)
+{
+    return node->value();
+}
+
+// Helper function to convert any type to string
+template <typename T>
+string convertToString(const T &value)
+{
+    if constexpr (std::is_same_v<T, string>)
+    {
+        return value;
+    }
+    else
+    {
+        return std::to_string(value);
+    }
+}
+
+// Helper function to check for division by zero
+template <typename T>
+void checkDivisionByZero(const T &value, BinOp *node)
+{
+    if (value == 0)
+    {
+        string errorMsg = "Division by zero at line " +
+                          std::to_string(node->op().line()) + ", column " +
+                          std::to_string(node->op().column());
+        Error::throwFatalError(
+            Error::ErrorType::RuntimeError,
+            errorMsg,
+            node->op().line(),
+            node->op().column());
+    }
+}
+
+// Helper function to throw errors with context
+[[noreturn]] void throwError(const string &msg, BinOp *node)
+{
+    string fullMsg = msg + " at line " +
+                     std::to_string(node->op().line()) + ", column " +
+                     std::to_string(node->op().column());
+    Error::throwFatalError(
+        Error::ErrorType::RuntimeError,
+        fullMsg,
+        node->op().line(),
+        node->op().column());
+}
+
+// Visitor struct for binary operations
+struct BinOpVisitor
+{
+    Token::TokenType opType;
+    BinOp *node;
+
+    BinOpVisitor(Token::TokenType op, BinOp *n) : opType(op), node(n) {}
+
+    // Handles all combinations except string-string
+    template <typename T, typename U>
+    nodeVisitorResult operator()(const T &left, const U &right)
+    {
+        if (opType == Token::TokenType::PLUS)
+        {
+            if constexpr (std::is_same_v<T, string> || std::is_same_v<U, string>)
+            {
+                return convertToString(left) + convertToString(right);
+            }
+            else
+            {
+                return left + right;
+            }
+        }
+        else
+        {
+            if constexpr (std::is_same_v<T, string> || std::is_same_v<U, string>)
+            {
+                throwError("Operator '" + node->op().value() + "' cannot be used with strings", node);
+            }
+            else
+            {
+                return handleNumericOp(left, right);
+            }
+        }
+    }
+
+    // Special case for string-string operations
+    nodeVisitorResult operator()(const string &left, const string &right)
+    {
+        if (opType == Token::TokenType::PLUS)
+        {
+            return left + right;
+        }
+        throwError("Operator '" + node->op().value() + "' cannot be used with strings", node);
+    }
+
+private:
+    template <typename T, typename U>
+    nodeVisitorResult handleNumericOp(const T &left, const U &right)
+    {
+        switch (opType)
+        {
+        case Token::TokenType::SUBTRACT:
+            return left - right;
+        case Token::TokenType::MULTIPLICATION:
+            return left * right;
+        case Token::TokenType::INTEGER_DIV:
+        {
+            checkDivisionByZero(right, node);
+            return static_cast<int>(left) / static_cast<int>(right);
+        }
+        case Token::TokenType::FLOAT_DIV:
+        {
+            checkDivisionByZero(right, node);
+            return static_cast<double>(left) / static_cast<double>(right);
+        }
+        default:
+            throwError("Unsupported operator for numeric operands", node);
+        }
+    }
+};
+
 nodeVisitorResult Interpreter::_visitBinOp(BinOp *node)
 {
     nodeVisitorResult leftResult = visit(node->left());
     nodeVisitorResult rightResult = visit(node->right());
 
-    auto checkDivisonByZero = [&](const auto &rightValue)
-    {
-        if (rightValue == 0)
-        {
-            // Handle division by zero
-            string errorMessage =
-                "Division by zero encountered in binary operation at line " +
-                to_string(node->op().line()) + ", column " +
-                to_string(node->op().column()) + ".";
-            Error::throwFatalError(Error::ErrorType::RuntimeError, errorMessage, node->op().line(), node->op().column());
-        }
-    };
-
-    auto result = std::visit(
-        [&](const auto &leftValue, const auto &rightValue) -> nodeVisitorResult
-        {
-            if (node->op().type() == Token::TokenType::PLUS)
-            {
-                return leftValue + rightValue;
-            }
-            if (node->op().type() == Token::TokenType::SUBTRACT)
-            {
-                return leftValue - rightValue;
-            }
-            if (node->op().type() == Token::TokenType::MULTIPLICATION)
-            {
-                return leftValue * rightValue;
-            }
-            if (node->op().type() == Token::TokenType::INTEGER_DIV)
-            {
-                checkDivisonByZero(rightValue);
-                return static_cast<int>(leftValue) / static_cast<int>(rightValue);
-            }
-            if (node->op().type() == Token::TokenType::FLOAT_DIV)
-            {
-                checkDivisonByZero(rightValue);
-                // Perform floating-point division and return a double
-                return static_cast<double>(leftValue) / static_cast<double>(rightValue);
-            }
-            string errorMessage =
-                "Unknown binary operator '" + node->op().value() +
-                "' encountered at line " + to_string(node->op().line()) +
-                ", column " + to_string(node->op().column()) + ".";
-            Error::throwFatalError(Error::ErrorType::RuntimeError, errorMessage, node->op().line(), node->op().column());
-        },
-        leftResult, rightResult);
-    return result;
+    return std::visit(BinOpVisitor(node->op().type(), node), leftResult, rightResult);
 }
 
 nodeVisitorResult Interpreter::_visitUniaryOp(UniaryOp *node)
@@ -138,7 +213,8 @@ nodeVisitorResult Interpreter::_visitProgram(Program *node)
     ActivationRecord *ar = new ActivationRecord("Program");
     _callStack.push(ar);
     nodeVisitorResult result = visit(node->block());
-    _callStack.printAR();
+    if (_logInterpreter)
+        _callStack.printAR();
     _callStack.pop();
 
     return result;
@@ -207,27 +283,60 @@ nodeVisitorResult Interpreter::_visitAssignStatement(AssignmentStatement *node)
 
 nodeVisitorResult Interpreter::_visitProcedureCallStatement(ProcedureCallStatement *node)
 {
+    if (node->procedureName() == "WRITELN")
+    {
+        for (auto param : node->actualParams())
+        {
+            nodeVisitorResult result = visit(param);
+            std::visit([](auto &arg)
+                       { cout << arg << " "; }, result);
+        }
+        cout << endl;
+        return 0;
+    }
+
+    ProcedureSymbol *procedureSymbol = node->procedureSymbol();
+    if (!procedureSymbol)
+    {
+        string errorMessage = "Procedure '" + node->procedureName() + "' is not defined.";
+        Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage,
+                               node->token().line(), node->token().column());
+    }
+
+    vector<Symbol *> formalParams = procedureSymbol->formalParams();
+    vector<Expr *> actualParams = node->actualParams();
+
+    if (formalParams.size() != actualParams.size())
+    {
+        string errorMessage = "Procedure '" + node->procedureName() + "' expects " +
+                              to_string(formalParams.size()) + " arguments but got " +
+                              to_string(actualParams.size()) + ".";
+        Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage,
+                               node->token().line(), node->token().column());
+    }
+
     ActivationRecord *ar = new ActivationRecord(node->procedureName(), _callStack.top());
     _callStack.push(ar);
 
-    vector<Expr *> actualParams = node->actualParams();
-    ProcedureSymbol *procedureSymbol = node->procedureSymbol();
-    vector<Symbol *> formalParams = procedureSymbol->formalParams();
-
     // now map the formalParams to the actual Params in the call stack of this procedure
-    for (int i = 0; i < actualParams.size(); i++)
+    for (size_t i = 0; i < actualParams.size(); i++)
     {
         string name = formalParams[i]->name();
         nodeVisitorResult value = visit(actualParams[i]);
-
         _callStack.set(name, value);
     }
 
     AST *blockAst = procedureSymbol->blockAst();
-
+    if (!blockAst)
+    {
+        string errorMessage = "Procedure '" + node->procedureName() + "' has no body.";
+        Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage,
+                               node->token().line(), node->token().column());
+    }
     visit(blockAst);
 
-    _callStack.printAR();
+    if (_logInterpreter)
+        _callStack.printAR();
     _callStack.pop();
 
     return 0;

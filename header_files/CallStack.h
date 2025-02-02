@@ -11,7 +11,7 @@
 
 using namespace std;
 
-using nodeVisitorResult = variant<int, double>;
+using nodeVisitorResult = variant<int, double, string>;
 
 // callstack will contain activation record which is a vector<string, nodeVisitorResult>
 
@@ -47,7 +47,7 @@ public:
             void operator()(int i) const { os << i; }
             void operator()(double d) const { os << d; }
             // void operator()(bool b) const { os << boolalpha << b; }
-            // void operator()(const string &s) const { os << "\"" << s << "\""; }
+            void operator()(const string &s) const { os << "\"" << s << "\""; }
         };
 
         os << "=== Activation Record: " << activationRecord._name << " ===\n";

@@ -16,6 +16,10 @@ private:
     {
         return;
     };
+    void _visitStringLiteral(StringLiteral *node)
+    {
+        return;
+    };
     void _visitBinOp(BinOp *node);
     void _visitUniaryOp(UniaryOp *node);
     void _visitVar(Var *node);

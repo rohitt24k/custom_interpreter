@@ -18,6 +18,12 @@ public:
                 cout << "nodevisitor inside -> _visitNum \n";
             return _visitNum(numNode);
         }
+        if (StringLiteral *stringLiteralNode = dynamic_cast<StringLiteral *>(node))
+        {
+            if (_log == 1)
+                cout << "nodevisitor inside -> _visitStringLiteral \n";
+            return _visitStringLiteral(stringLiteralNode);
+        }
         if (UniaryOp *UniaryOpNode = dynamic_cast<UniaryOp *>(node))
         {
             if (_log == 1)
@@ -103,6 +109,7 @@ private:
     virtual T _visitType(Type *node) = 0;
     virtual T _visitBinOp(BinOp *node) = 0;
     virtual T _visitNum(Num *node) = 0;
+    virtual T _visitStringLiteral(StringLiteral *node) = 0;
     virtual T _visitUniaryOp(UniaryOp *node) = 0;
     virtual T _visitCompoundStatement(CompoundStatement *node) = 0;
     virtual T _visitAssignStatement(AssignmentStatement *node) = 0;

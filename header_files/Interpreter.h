@@ -12,6 +12,7 @@ private:
     AST *_tree;
 
     nodeVisitorResult _visitNum(Num *node);
+    nodeVisitorResult _visitStringLiteral(StringLiteral *node);
     nodeVisitorResult _visitBinOp(BinOp *node);
     nodeVisitorResult _visitUniaryOp(UniaryOp *node);
     nodeVisitorResult _visitVar(Var *node);
@@ -33,9 +34,10 @@ private:
 
     // unordered_map<string, nodeVisitorResult> _GLOBAL_SCOPE;
     CallStack _callStack;
+    short _logInterpreter = 0;
 
 public:
-    Interpreter(AST *tree, int log = 0) : NodeVisitor(log), _tree(tree) {}
+    Interpreter(AST *tree, int log = 0) : NodeVisitor(log), _tree(tree), _logInterpreter(log) {}
     nodeVisitorResult interpret();
     // void printGlobalScope()
     // {

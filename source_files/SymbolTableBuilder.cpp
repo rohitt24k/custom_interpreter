@@ -54,7 +54,7 @@ void SymbolTableBuilder::_visitVarDecl(VarDecl *node)
 void SymbolTableBuilder::_visitProcedureDecl(ProcedureDecl *node)
 {
     const string procedureName = node->procedureName();
-    ProcedureSymbol *procedureSymbol = new ProcedureSymbol(procedureName);
+    ProcedureSymbol *procedureSymbol = new UserDefinedProcedureSymbol(procedureName);
 
     _currentScope->define(procedureSymbol);
 
@@ -132,19 +132,20 @@ void SymbolTableBuilder::_visitProcedureCallStatement(ProcedureCallStatement *no
                                node->token().line(), node->token().column());
     }
 
-    ProcedureSymbol *procedureSymbol = dynamic_cast<ProcedureSymbol *>(symbol);
-
-    node->setProcedureSymbol(procedureSymbol);
-
-    if (procedureSymbol->formalParams().size() != node->actualParams().size())
+    if (UserDefinedProcedureSymbol *procedureSymbol = dynamic_cast<UserDefinedProcedureSymbol *>(symbol))
     {
-        string errorMessage = "Procedure '" + node->procedureName() +
-                              "' expects " + to_string(procedureSymbol->formalParams().size()) +
-                              " arguments, but " + to_string(node->actualParams().size()) +
-                              " were provided.";
-        Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage,
-                               node->token().line(), node->token().column());
-    }
+        node->setProcedureSymbol(procedureSymbol);
+
+        if (procedureSymbol->formalParams().size() != node->actualParams().size())
+        {
+            string errorMessage = "Procedure '" + node->procedureName() +
+                                  "' expects " + to_string(procedureSymbol->formalParams().size()) +
+                                  " arguments, but " + to_string(node->actualParams().size()) +
+                                  " were provided.";
+            Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage,
+                                   node->token().line(), node->token().column());
+        }
+    } // skip the formalparams and actualparams size checking for the builtinfunction for now
 
     for (auto params : node->actualParams())
         visit(params);
