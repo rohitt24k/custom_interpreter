@@ -46,8 +46,12 @@ public:
 
 class VarSymbol : public Symbol
 {
+    string _scopeName;
+
 public:
-    VarSymbol(string name, Symbol *type) : Symbol(name, type) {}
+    VarSymbol(string name, Symbol *type, const string &scopeName) : Symbol(name, type), _scopeName(scopeName) {}
+
+    string &scopeName() { return _scopeName; }
 
     string toString() const override
     {

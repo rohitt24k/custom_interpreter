@@ -36,6 +36,15 @@ public:
         FLOAT_DIV,
         PROCEDURE,
         WRITELN,
+        IF,
+        THEN,
+        ELSE,
+        LESS_THAN,
+        GREATER_THAN,
+        EQUAL_TO,
+        NOT_EQUAL_TO,
+        LESS_THAN_OR_EQUAL,
+        GREATER_THAN_OR_EQUAL,
         EOD, // end of document
     };
 

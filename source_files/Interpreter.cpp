@@ -210,7 +210,7 @@ nodeVisitorResult Interpreter::_visitVar(Var *node)
 
 nodeVisitorResult Interpreter::_visitProgram(Program *node)
 {
-    ActivationRecord *ar = new ActivationRecord("Program");
+    ActivationRecord *ar = new ActivationRecord("global");
     _callStack.push(ar);
     nodeVisitorResult result = visit(node->block());
     if (_logInterpreter)
@@ -264,7 +264,7 @@ nodeVisitorResult Interpreter::_visitAssignStatement(AssignmentStatement *node)
 {
     try
     {
-        _callStack.set(node->left()->value(), visit(node->right()));
+        _callStack.set(node->left()->value(), visit(node->right()), node->left()->scopeName());
         return 0;
     }
     catch (const exception &e)
@@ -323,7 +323,7 @@ nodeVisitorResult Interpreter::_visitProcedureCallStatement(ProcedureCallStateme
     {
         string name = formalParams[i]->name();
         nodeVisitorResult value = visit(actualParams[i]);
-        _callStack.set(name, value);
+        _callStack.set(name, value, node->procedureName());
     }
 
     AST *blockAst = procedureSymbol->blockAst();
@@ -339,6 +339,25 @@ nodeVisitorResult Interpreter::_visitProcedureCallStatement(ProcedureCallStateme
         _callStack.printAR();
     _callStack.pop();
 
+    return 0;
+}
+
+nodeVisitorResult Interpreter::_visitIfelseStatement(IfelseStatement *node)
+{
+    if (_handleConditionNode(node->condition()))
+    {
+        for (auto &statement : node->thenBranch())
+        {
+            visit(statement);
+        }
+    }
+    else
+    {
+        for (auto &statement : node->elseBranch())
+        {
+            visit(statement);
+        }
+    }
     return 0;
 }
 

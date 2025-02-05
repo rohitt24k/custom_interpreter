@@ -54,6 +54,12 @@ public:
                 cout << "nodevisitor inside -> _visitProcedureCallStatement \n";
             return _visitProcedureCallStatement(procedureCallNode);
         }
+        if (IfelseStatement *ifElseNode = dynamic_cast<IfelseStatement *>(node))
+        {
+            if (_log == 1)
+                cout << "nodevisitor inside -> _visitIfelseStatement \n";
+            return _visitIfelseStatement(ifElseNode);
+        }
         if (NoOp *noOpNode = dynamic_cast<NoOp *>(node))
         {
             if (_log == 1)
@@ -96,6 +102,13 @@ public:
                 cout << "nodevisitor inside -> _visitProcedureDecl \n";
             return _visitProcedureDecl(procedureDeclNode);
         }
+
+        // if (Condition *conditionNode = dynamic_cast<Condition *>(node))
+        // {
+        //     if (_log == 1)
+        //         cout << "nodevisitor inside -> _visitCondition \n";
+        //     return _visitCondition(conditionNode);
+        // }
         string errorMessage = "Error in interpreting the tree";
         Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, 0, 0);
     }
@@ -114,8 +127,11 @@ private:
     virtual T _visitCompoundStatement(CompoundStatement *node) = 0;
     virtual T _visitAssignStatement(AssignmentStatement *node) = 0;
     virtual T _visitProcedureCallStatement(ProcedureCallStatement *node) = 0;
+    virtual T _visitIfelseStatement(IfelseStatement *node) = 0;
     virtual T _visitNoOP(NoOp *node) = 0;
     virtual T _visitVar(Var *node) = 0;
+
+    // virtual T _visitCondition(Condition *node) = 0;
 };
 
 #endif // NODEVISITOR_H

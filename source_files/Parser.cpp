@@ -125,6 +125,33 @@ Var *Parser::_variable()
     return new Var(currentToken, currentToken.value());
 }
 
+Condition *Parser::_condition()
+{
+    Expr *left = _factor();
+    Token op = _currentToken;
+
+    std::unordered_set<Token::TokenType> validComparators = {
+        Token::TokenType::EQUAL_TO,
+        Token::TokenType::NOT_EQUAL_TO,
+        Token::TokenType::GREATER_THAN,
+        Token::TokenType::LESS_THAN,
+        Token::TokenType::GREATER_THAN_OR_EQUAL,
+        Token::TokenType::LESS_THAN_OR_EQUAL};
+
+    if (validComparators.find(op.type()) != validComparators.end())
+    {
+        _eat(op.type());
+    }
+    else
+    {
+        string errorMessage = "Invalid comparison operator '" + op.value() + "' in condition.";
+        Error::throwFatalError(Error::ErrorType::SyntaxError, errorMessage, op.line(), op.column());
+    }
+
+    Expr *right = _factor();
+    return new Condition(left, op, right);
+}
+
 Program *Parser::_program()
 {
     _eat(Token::TokenType::PROGRAM);
@@ -324,6 +351,10 @@ Statement *Parser::_statement()
         }
         return _assignmentStatement();
     }
+    if (_currentToken.type() == Token::TokenType::IF)
+    {
+        return _ifelseStatement();
+    }
 
     return _empty();
 }
@@ -364,6 +395,41 @@ ProcedureCallStatement *Parser::_procedureCallStatement()
     }
 
     return new ProcedureCallStatement(procedureName, actualParams, token);
+}
+
+IfelseStatement *Parser::_ifelseStatement()
+{
+    _eat(Token::TokenType::IF);
+    Condition *condition = _condition();
+    _eat(Token::TokenType::THEN);
+    vector<Statement *> thenBranch;
+    vector<Statement *> elseBranch;
+    if (_currentToken.type() == Token::TokenType::BEGIN)
+    {
+        _eat(Token::TokenType::BEGIN);
+        thenBranch = _statementList();
+        _eat(Token::TokenType::END);
+    }
+    else
+    {
+        thenBranch.push_back(_statement());
+    }
+    if (_currentToken.type() == Token::TokenType::ELSE)
+    {
+        _eat(Token::TokenType::ELSE);
+        if (_currentToken.type() == Token::TokenType::BEGIN)
+        {
+            _eat(Token::TokenType::BEGIN);
+            elseBranch = _statementList();
+            _eat(Token::TokenType::END);
+        }
+        else
+        {
+            elseBranch.push_back(_statement());
+        }
+    }
+
+    return new IfelseStatement(condition, thenBranch, elseBranch);
 }
 
 NoOp *Parser::_empty()

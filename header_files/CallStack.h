@@ -24,7 +24,30 @@ private:
 
 public:
     ActivationRecord(const string name, ActivationRecord *enclosingActivationRecord = NULL) : _name(name), _enclosingActivationRecord(enclosingActivationRecord) {}
-    void set(string name, nodeVisitorResult value) { _members[name] = value; }
+    void set(string &name, nodeVisitorResult value, string &scopeName)
+    {
+        if (_name == scopeName)
+        {
+            _members[name] = value;
+        }
+        else
+        {
+            if (_name == "global")
+            {
+                string errorMessage = "Variable '" + name + "' is not declared in the current scope and cannot be assigned.";
+                Error::throwFatalError(Error::ErrorType::RuntimeError, errorMessage);
+            }
+            else if (_enclosingActivationRecord == nullptr)
+            {
+                string errorMessage = "Enclosing activation record not found while setting variable '" + name + "'.";
+                Error::throwFatalError(Error::ErrorType::RuntimeError, errorMessage);
+            }
+            else
+            {
+                _enclosingActivationRecord->set(name, value, scopeName);
+            }
+        }
+    }
     nodeVisitorResult &get(const string name)
     {
         auto it = _members.find(name);
@@ -107,14 +130,15 @@ public:
         return top()->get(name);
     }
 
-    void set(const string &name, const nodeVisitorResult &value)
+    void set(string &name, nodeVisitorResult value, string &scopeName)
     {
+        // first check
         if (_records.empty())
         {
             throw runtime_error("Attempted to assign value to '" + name + "' but the call stack is empty.");
         }
 
-        top()->set(name, value);
+        top()->set(name, value, scopeName);
     }
 
     void printAR()

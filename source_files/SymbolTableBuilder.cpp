@@ -35,7 +35,7 @@ void SymbolTableBuilder::_visitVarDecl(VarDecl *node)
 {
     Symbol *symbol = _currentScope->lookup(node->type()->value());
 
-    Symbol *variableSymbol = new VarSymbol(node->var()->value(), symbol);
+    Symbol *variableSymbol = new VarSymbol(node->var()->value(), symbol, _currentScope->scopeName());
 
     if (_currentScope->lookup(node->var()->value(), 1) != NULL)
     {
@@ -70,7 +70,7 @@ void SymbolTableBuilder::_visitProcedureDecl(ProcedureDecl *node)
     for (auto param : node->params())
     {
         Symbol *symbol = _currentScope->lookup(param->type()->value());
-        Symbol *variableSymbol = new VarSymbol(param->var()->value(), symbol);
+        Symbol *variableSymbol = new VarSymbol(param->var()->value(), symbol, _currentScope->scopeName());
         _currentScope->define(variableSymbol);
         procedureSymbol->insertParams(variableSymbol);
     }
@@ -109,13 +109,23 @@ void SymbolTableBuilder::_visitCompoundStatement(CompoundStatement *node)
 void SymbolTableBuilder::_visitAssignStatement(AssignmentStatement *node)
 {
     Symbol *symbol = _currentScope->lookup(node->left()->value());
-    if (symbol == NULL)
+
+    if (symbol == nullptr)
     {
         string errorMessage = "Assignment to an undeclared variable '" + node->left()->value() +
                               "' at line " + to_string(node->left()->token().line()) +
                               ", column " + to_string(node->left()->token().column()) + ".";
         Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, node->left()->token().line(), node->left()->token().column());
     }
+
+    VarSymbol *varSymbol = dynamic_cast<VarSymbol *>(symbol);
+
+    if (varSymbol == nullptr)
+    {
+        string errorMessage = "Cannot assign to '" + node->left()->value() + "' because it is not a variable.";
+        Error::throwFatalError(Error::ErrorType::SemanticError, errorMessage, node->left()->token().line(), node->left()->token().column());
+    }
+    node->left()->setScopeName(varSymbol->scopeName());
 
     visit(node->right());
 }
@@ -149,6 +159,21 @@ void SymbolTableBuilder::_visitProcedureCallStatement(ProcedureCallStatement *no
 
     for (auto params : node->actualParams())
         visit(params);
+}
+
+void SymbolTableBuilder::_visitIfelseStatement(IfelseStatement *node)
+{
+
+    for (auto &statement : node->thenBranch())
+    {
+        visit(statement);
+    }
+    for (auto &statement : node->elseBranch())
+    {
+        visit(statement);
+    }
+
+    return;
 }
 
 void SymbolTableBuilder::_visitVar(Var *node)

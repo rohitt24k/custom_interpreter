@@ -66,41 +66,44 @@ Token Lexer::_id()
 
 Token Lexer::_readString()
 {
-    // Skip the opening quote.
-    _cursor++;
-    int column = _column++;
     string stringConst = "";
+    int column = _column;
 
-    while (_cursor < _sourceCode.size() && _sourceCode[_cursor] != '\'')
+    while (_cursor < _sourceCode.size() && _sourceCode[_cursor] == '\'')
     {
-        if (_sourceCode[_cursor] == '\\')
-        {
-            _cursor++;
-            _column++;
-            if (_cursor >= _sourceCode.size())
-            {
-                Error::throwFatalError(Error::ErrorType::SyntaxError,
-                                       "Unterminated string literal", _line, _column);
-            }
-            stringConst.push_back(_sourceCode[_cursor]);
-        }
-        else
-        {
-            stringConst.push_back(_sourceCode[_cursor]);
-        }
+        // Skip the opening quote.
         _cursor++;
         _column++;
+
+        while (_cursor < _sourceCode.size() && _sourceCode[_cursor] != '\'')
+        {
+            stringConst.push_back(_sourceCode[_cursor]);
+            _cursor++;
+            _column++;
+        }
+
+        if (_cursor >= _sourceCode.size() || _sourceCode[_cursor] != '\'')
+        {
+            Error::throwFatalError(Error::ErrorType::SyntaxError,
+                                   "Unterminated string literal", _line, _column);
+        }
+
+        // Skip the closing quote.
+        _cursor++;
+        _column++;
+
+        if (_cursor < _sourceCode.size() && _sourceCode[_cursor] == '\'')
+        {
+            stringConst.push_back(_sourceCode[_cursor]);
+        }
     }
 
-    if (_cursor >= _sourceCode.size() || _sourceCode[_cursor] != '\'')
+    if (_cursor >= _sourceCode.size() || _sourceCode[_cursor] == '\'')
     {
         Error::throwFatalError(Error::ErrorType::SyntaxError,
                                "Unterminated string literal", _line, _column);
     }
 
-    // Skip the closing quote.
-    _cursor++;
-    _column++;
     return Token(Token::TokenType::STRING_CONST, stringConst, _line, column);
 }
 
@@ -231,6 +234,44 @@ Token Lexer::getNextToken()
         if (_sourceCode[_cursor] == '\'')
         {
             return _readString();
+        }
+        if (_sourceCode[_cursor] == '>')
+        {
+            if (_peek() == '=')
+            {
+                _cursor++;
+                _cursor++;
+                _column++;
+                return Token(Token::TokenType::GREATER_THAN_OR_EQUAL, ">=", _line, _column++);
+            }
+            _cursor++;
+            return Token(Token::TokenType::GREATER_THAN, ">", _line, _column++);
+        }
+        if (_sourceCode[_cursor] == '<')
+        {
+            if (_peek() == '=')
+            {
+                _cursor++;
+                _cursor++;
+                _column++;
+                return Token(Token::TokenType::LESS_THAN_OR_EQUAL, "<=", _line, _column++);
+            }
+            _cursor++;
+            return Token(Token::TokenType::LESS_THAN, "<", _line, _column++);
+        }
+        if (_sourceCode[_cursor] == '=')
+        {
+            _cursor++;
+            return Token(Token::TokenType::EQUAL_TO, "==", _line, _column++);
+        }
+        if (_sourceCode[_cursor] == '!' && _peek() == '=')
+        {
+            int column = _column;
+            _cursor++;
+            _cursor++;
+            _column++;
+            _column++;
+            return Token(Token::TokenType::NOT_EQUAL_TO, "!=", _line, column);
         }
 
         string errorMessage = "Unexpected character '" + string(1, currentChar) + "' at line " +

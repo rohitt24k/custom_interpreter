@@ -72,11 +72,31 @@ class Var : public Expr
 private:
     Token _token;
     string _value;
+    string _scopeName;
 
 public:
     Var(Token token, string value) : _token(token), _value(value) {}
     Token token() const { return _token; }
-    string value() const { return _value; }
+    string &value() { return _value; }
+    void setScopeName(const string &scopeName)
+    {
+        _scopeName = scopeName;
+    }
+    string &scopeName() { return _scopeName; }
+};
+
+class Condition : public AST
+{
+private:
+    Expr *_left;
+    Token _op;
+    Expr *_right;
+
+public:
+    Condition(Expr *left, Token token, Expr *right) : _left(left), _right(right), _op(token) {}
+    Expr *left() const { return _left; }
+    Expr *right() const { return _right; }
+    Token op() const { return _op; }
 };
 
 class Statement : public AST
@@ -95,7 +115,7 @@ private:
 
 public:
     ProcedureCallStatement(string procedureName, vector<Expr *> actualParams, Token token) : _procedureName(procedureName), _actualParams(actualParams), _token(token), _procedureSymbol(NULL) {}
-    string procedureName() const { return _procedureName; }
+    string &procedureName() { return _procedureName; }
     const vector<Expr *> &actualParams() const { return _actualParams; }
     Token token() const { return _token; }
     void setProcedureSymbol(ProcedureSymbol *procedureSymbol) { _procedureSymbol = procedureSymbol; }
@@ -129,6 +149,21 @@ public:
 
 class NoOp : public Statement
 {
+};
+
+class IfelseStatement : public Statement
+{
+private:
+    Condition *_condition;
+    vector<Statement *> _thenBranch;
+    vector<Statement *> _elseBranch;
+
+public:
+    IfelseStatement(Condition *condition, const vector<Statement *> &thenBranch, const vector<Statement *> &elseBranch) : _condition(condition), _thenBranch(thenBranch), _elseBranch(elseBranch) {}
+
+    const Condition *condition() const { return _condition; }
+    const vector<Statement *> &thenBranch() const { return _thenBranch; }
+    const vector<Statement *> &elseBranch() const { return _elseBranch; }
 };
 
 class Type : public AST

@@ -56,6 +56,24 @@ string Token::tokenTypeToString(TokenType type)
         return "Procedure";
     case TokenType::EOD:
         return "EOD";
+    case TokenType::IF:
+        return "If";
+    case TokenType::THEN:
+        return "Then";
+    case TokenType::ELSE:
+        return "Else";
+    case TokenType::LESS_THAN:
+        return "<";
+    case TokenType::GREATER_THAN:
+        return ">";
+    case TokenType::EQUAL_TO:
+        return "=";
+    case TokenType::NOT_EQUAL_TO:
+        return "!=";
+    case TokenType::LESS_THAN_OR_EQUAL:
+        return "<=";
+    case TokenType::GREATER_THAN_OR_EQUAL:
+        return ">=";
     default:
         return "Unknown";
     }
@@ -71,4 +89,7 @@ unordered_map<string, Token::TokenType> RESERVED_KEYWORDS = {
     {"PROGRAM", Token::TokenType::PROGRAM},
     {"VAR", Token::TokenType::VAR},
     {"PROCEDURE", Token::TokenType::PROCEDURE},
+    {"IF", Token::TokenType::IF},
+    {"THEN", Token::TokenType::THEN},
+    {"ELSE", Token::TokenType::ELSE},
 };

@@ -3,6 +3,7 @@
 
 #include "AST.h"
 #include "Lexer.h"
+#include <unordered_set>
 
 class Parser
 {
@@ -15,6 +16,8 @@ private:
     Expr *_term();
     Expr *_factor();
     Var *_variable();
+
+    Condition *_condition();
 
     Program *_program();
 
@@ -32,6 +35,7 @@ private:
     Statement *_statement();
     AssignmentStatement *_assignmentStatement();
     ProcedureCallStatement *_procedureCallStatement();
+    IfelseStatement *_ifelseStatement();
     NoOp *_empty();
 
 public:

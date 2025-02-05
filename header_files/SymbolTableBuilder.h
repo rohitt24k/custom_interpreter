@@ -31,6 +31,7 @@ private:
     void _visitCompoundStatement(CompoundStatement *node);
     void _visitAssignStatement(AssignmentStatement *node);
     void _visitProcedureCallStatement(ProcedureCallStatement *node);
+    void _visitIfelseStatement(IfelseStatement *node);
     void _visitNoOP(NoOp *node)
     {
         return;
@@ -47,7 +48,7 @@ private:
     int _logSymbolTable = 0;
 
 public:
-    SymbolTableBuilder(AST *tree, int log = 0) : NodeVisitor(log), _tree(tree), _currentScope(NULL), _logSymbolTable(log) {}
+    SymbolTableBuilder(AST *tree, int log = 0) : NodeVisitor(0), _tree(tree), _currentScope(NULL), _logSymbolTable(log) {}
 
     void buildSymbolTable()
     {
